@@ -10,7 +10,7 @@
     body {
       font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
       margin: 0;
-      padding: 40px;
+      padding: 35px 40px;
       background-color: #ffffff;
       color: #1e293b;
       -webkit-print-color-adjust: exact;
@@ -18,10 +18,9 @@
     .invoice-card {
       border: 1px solid #e2e8f0;
       border-radius: 12px;
-      padding: 35px;
+      padding: 30px 35px;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
       position: relative;
-      overflow: hidden;
     }
     .top-bar {
       position: absolute;
@@ -29,41 +28,37 @@
       left: 0;
       right: 0;
       height: 6px;
-      background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+      background: linear-gradient(90deg, #1d4ed8, #0ea5e9);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
     }
     .header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       border-bottom: 2px solid #f1f5f9;
       padding-bottom: 20px;
     }
-    .brand-title {
-      font-size: 26px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
-    .brand-sub {
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 500;
+    .brand-logo {
+      max-height: 65px;
+      max-width: 280px;
+      object-fit: contain;
     }
     .doc-meta {
       text-align: left;
-      font-size: 14px;
+      font-size: 13.5px;
       line-height: 1.6;
     }
     .doc-meta strong {
-      color: #334155;
+      color: #0f172a;
     }
     .client-box {
       background-color: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
-      padding: 16px 20px;
-      margin: 25px 0;
-      font-size: 14px;
+      padding: 14px 18px;
+      margin: 20px 0;
+      font-size: 13.5px;
       line-height: 1.7;
     }
     table {
@@ -76,118 +71,102 @@
       color: #ffffff;
       font-weight: 600;
       font-size: 13px;
-      padding: 12px 14px;
+      padding: 10px 14px;
       text-align: right;
     }
     th:first-child { border-top-right-radius: 6px; }
     th:last-child { border-top-left-radius: 6px; }
     td {
-      padding: 12px 14px;
+      padding: 11px 14px;
       border-bottom: 1px solid #e2e8f0;
-      font-size: 13.5px;
+      font-size: 13px;
       color: #334155;
     }
     .totals-area {
-      margin-top: 25px;
+      margin-top: 20px;
       display: flex;
       justify-content: flex-end;
     }
     .totals-table {
       width: 320px;
-      font-size: 14px;
-      line-height: 2;
+      font-size: 13.5px;
+      line-height: 1.9;
     }
     .grand-total {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: bold;
       color: #1d4ed8;
       border-top: 2px solid #e2e8f0;
       padding-top: 6px;
+      margin-top: 4px;
     }
 
-    /* منطقة التوثيق والختم والتوقيع */
+    /* منطقة التوثيق، الختم، والتوقيع */
     .auth-footer {
-      margin-top: 40px;
+      margin-top: 35px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding-top: 20px;
+      align-items: flex-end;
+      padding-top: 15px;
       border-top: 1px dashed #cbd5e1;
     }
     .qr-box {
       text-align: center;
+      width: 120px;
     }
     .qr-box img {
-      width: 90px;
-      height: 90px;
+      width: 95px;
+      height: 95px;
       border-radius: 6px;
       border: 1px solid #e2e8f0;
+      padding: 2px;
     }
     .qr-text {
-      font-size: 10px;
+      font-size: 9.5px;
       color: #64748b;
       margin-top: 4px;
       font-weight: 600;
     }
 
-    /* الختم الفعلي / الديناميكي */
+    /* الختم المعتمد */
     .stamp-container {
-      position: relative;
-      width: 140px;
       text-align: center;
-    }
-    .official-stamp {
-      width: 120px;
-      height: 120px;
-      border: 3px double #b91c1c;
-      border-radius: 50%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      color: #b91c1c;
-      padding: 6px;
-      box-sizing: border-box;
-      transform: rotate(-6deg);
-      background: rgba(254, 242, 242, 0.4);
+      width: 160px;
     }
     .stamp-img {
-      width: 120px;
-      height: 120px;
-      transform: rotate(-6deg);
-      opacity: 0.88;
+      max-height: 75px;
+      max-width: 150px;
+      object-fit: contain;
+      margin-bottom: 4px;
     }
-    .stamp-text-ar { font-size: 10px; font-weight: bold; }
-    .stamp-text-en { font-size: 8px; font-weight: bold; letter-spacing: 0.5px; }
-    .stamp-code { font-size: 8.5px; font-family: monospace; font-weight: bold; margin: 2px 0; }
 
     /* التوقيع الخطي وبصمة الحماية */
     .signature-container {
       width: 180px;
       text-align: center;
-      position: relative;
     }
     .sig-img {
-      max-height: 55px;
+      max-height: 50px;
       max-width: 140px;
-      margin-bottom: -10px;
+      object-fit: contain;
+      margin-bottom: 4px;
     }
     .signature-line {
       border-top: 1.5px solid #475569;
-      padding-top: 6px;
-      font-size: 13px;
+      padding-top: 4px;
+      font-size: 12.5px;
       font-weight: bold;
       color: #1e293b;
     }
-    .sig-security-ref {
+    .security-badge {
       font-size: 9.5px;
       font-family: monospace;
-      color: #64748b;
-      margin-top: 2px;
+      color: #475569;
       background: #f1f5f9;
-      padding: 1px 4px;
-      border-radius: 3px;
+      padding: 2px 6px;
+      border-radius: 4px;
       display: inline-block;
+      margin-top: 3px;
     }
   </style>
 </head>
@@ -198,8 +177,12 @@
 
     <div class="header">
       <div>
-        <div class="brand-title">{{ brand.name_ar }}</div>
-        <div class="brand-sub">{{ brand.name_en }} - سلطنة عُمان</div>
+        {% if logo_base64 %}
+          <img src="data:image/png;base64,{{ logo_base64 }}" class="brand-logo" alt="Logo" />
+        {% else %}
+          <h2 style="margin:0; color:#0f172a;">{{ brand.name_ar }}</h2>
+          <div style="font-size:12px; color:#64748b;">{{ brand.name_en }}</div>
+        {% endif %}
       </div>
       <div class="doc-meta">
         <div><strong>رقم الفاتورة:</strong> {{ invoice_number }}</div>
@@ -209,7 +192,7 @@
 
     <div class="client-box">
       <strong>العميل:</strong> {{ client_name }}<br>
-      <strong>البريد الإلكتروني / الهاتف:</strong> {{ client_contact }}
+      <strong>بيانات الاتصال:</strong> {{ client_contact }}
     </div>
 
     <table>
@@ -217,8 +200,8 @@
         <tr>
           <th>الوصف</th>
           <th style="width: 12%; text-align: center;">الكمية</th>
-          <th style="width: 20%;">السعر (ر.ع.)</th>
-          <th style="width: 20%;">الإجمالي (ر.ع.)</th>
+          <th style="width: 22%;">السعر (ر.ع.)</th>
+          <th style="width: 22%;">الإجمالي (ر.ع.)</th>
         </tr>
       </thead>
       <tbody>
@@ -250,36 +233,31 @@
       </div>
     </div>
 
-    <!-- قسم التوثيق، الختم، والتوقيع -->
+    <!-- قسم التوثيق والاعتماد -->
     <div class="auth-footer">
-      <!-- رمز الـ QR السريع -->
+      <!-- رمز الـ QR -->
       <div class="qr-box">
-        <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Verification" />
-        <div class="qr-text">امسح للتحقق الرسمي</div>
-      </div>
-
-      <!-- الختم الرسمي -->
-      <div class="stamp-container">
-        {% if stamp_base64 %}
-          <img src="data:image/png;base64,{{ stamp_base64 }}" class="stamp-img" alt="Official Stamp" />
-          <div class="sig-security-ref">{{ security_code }}</div>
-        {% else %}
-          <div class="official-stamp">
-            <div class="stamp-text-ar">القلعة الرقمية ش.ش.و</div>
-            <div class="stamp-text-en">DIGITAL CASTLE</div>
-            <div class="stamp-code">{{ security_code }}</div>
-            <div style="font-size: 7.5px; font-weight: bold;">معتمد وموثق</div>
-          </div>
+        {% if qr_code_base64 %}
+          <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Verification" />
+          <div class="qr-text">امسح للتحقق الرسمي</div>
         {% endif %}
       </div>
 
-      <!-- التوقيع الخطي وبصمة الحماية -->
+      <!-- ختم الشركة -->
+      <div class="stamp-container">
+        {% if stamp_base64 %}
+          <img src="data:image/png;base64,{{ stamp_base64 }}" class="stamp-img" alt="Official Stamp" />
+        {% endif %}
+        <div><span class="security-badge">{{ security_code }}</span></div>
+      </div>
+
+      <!-- التوقيع المعتمد -->
       <div class="signature-container">
         {% if signature_base64 %}
           <img src="data:image/png;base64,{{ signature_base64 }}" class="sig-img" alt="Signature" />
         {% endif %}
         <div class="signature-line">التوقيع المعتمد</div>
-        <div class="sig-security-ref">Security Ref: {{ security_code }}</div>
+        <div class="security-badge">Ref: {{ security_code }}</div>
       </div>
     </div>
 
