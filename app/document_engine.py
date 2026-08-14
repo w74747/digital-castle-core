@@ -6,7 +6,8 @@ from playwright.async_api import async_playwright
 from app.security import (
     generate_document_seal_code,
     generate_verification_qr,
-    get_asset_base64,
+    get_secure_stamped_asset,
+    get_logo_data_uri,
 )
 from config.brand_settings import BRAND
 
@@ -31,18 +32,24 @@ class DocumentEngine:
         total = subtotal + tax
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-        # 1. توليد رمز الأمان والـ QR
+        # توليد كود الأمان المشفر والـ QR
         security_code = generate_document_seal_code(
             invoice_number, total, date_str
         )
-        qr_base64 = generate_verification_qr(
+        qr_uri = generate_verification_qr(
             invoice_number, total, date_str, security_code
         )
 
-        # 2. قراءة الأصول الرسمية المرفوعة
-        logo_base64 = get_asset_base64("assets/logo.png")
-        sig_base64 = get_asset_base64("assets/signature.png")
-        stamp_base64 = get_asset_base64("assets/stamp.png")
+        # قراءة الشعار
+        logo_uri = get_logo_data_uri("assets/logo.png")
+
+        # دمج كود الأمان مباشرة داخل بكسلات الختم والتوقيع في وسطهما
+        stamp_uri = get_secure_stamped_asset(
+            "assets/stamp.png", security_code, is_signature=False
+        )
+        signature_uri = get_secure_stamped_asset(
+            "assets/signature.png", security_code, is_signature=True
+        )
 
         return self.template.render(
             brand=BRAND,
@@ -54,11 +61,10 @@ class DocumentEngine:
             subtotal=subtotal,
             tax=tax,
             total=total,
-            security_code=security_code,
-            qr_code_base64=qr_base64,
-            logo_base64=logo_base64,
-            signature_base64=sig_base64,
-            stamp_base64=stamp_base64,
+            qr_uri=qr_uri,
+            logo_uri=logo_uri,
+            signature_uri=signature_uri,
+            stamp_uri=stamp_uri,
         )
 
     async def generate_invoice_pdf(
@@ -83,6 +89,7 @@ class DocumentEngine:
             )
             page = await browser.new_page()
             await page.set_content(html_content, wait_until="networkidle")
+            await page.evaluate("document.fonts.ready")
 
             pdf_bytes = await page.pdf(
                 format="A4",
