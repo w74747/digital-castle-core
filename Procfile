@@ -1,1 +1,1 @@
-worker: python main.py
+web: python bot_orchestrator.py
