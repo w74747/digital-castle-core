@@ -3,7 +3,10 @@ from datetime import datetime
 from io import BytesIO
 from jinja2 import Template
 from playwright.async_api import async_playwright
-from app.security import generate_document_seal_code
+from app.security import (
+    generate_document_seal_code,
+    generate_verification_qr,
+)
 from config.brand_settings import BRAND
 
 
@@ -29,9 +32,14 @@ class DocumentEngine:
         total = subtotal + tax
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-        # توليد البصمة الأمنية
+        # 1. توليد كود الأمان المشفر
         security_code = generate_document_seal_code(
             invoice_number, total, date_str
+        )
+
+        # 2. توليد صورة الـ QR Code
+        qr_base64 = generate_verification_qr(
+            invoice_number, total, date_str, security_code
         )
 
         return self.template.render(
@@ -47,6 +55,7 @@ class DocumentEngine:
             include_stamp=include_stamp,
             include_signature=include_signature,
             security_code=security_code,
+            qr_code_base64=qr_base64,
         )
 
     async def generate_invoice_pdf(
