@@ -51,7 +51,11 @@ class DocumentEngine:
         async with async_playwright() as p:
             browser = await p.chromium.launch(
                 headless=True,
-                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-gpu",
+                ],
             )
             page = await browser.new_page()
             await page.set_content(html_content, wait_until="networkidle")
