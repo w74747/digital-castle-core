@@ -1,6 +1,18 @@
 import logging
 import os
-from app.agent_router import call_developer, call_fast_ops, call_planner
+import sys
+
+# 1. ضمان تضمين المجلد الحالي ومجلد app في مسارات بايثون تلقائياً
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+sys.path.insert(0, os.path.join(BASE_DIR, "app"))
+
+# 2. استيراد مرن يتكيف مع مكان وجود الملف تلقائياً
+try:
+    from app.agent_router import call_developer, call_fast_ops, call_planner
+except ModuleNotFoundError:
+    from agent_router import call_developer, call_fast_ops, call_planner
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
