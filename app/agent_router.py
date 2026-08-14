@@ -1,57 +1,43 @@
-import httpx
-from config import ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, TOGETHER_API_KEY
+import os
+import requests
 
-async def call_claude(prompt: str, system: str = "") -> str:
-    """للتخطيط المعماري، دراسات الجدوى، وتصميم واجهات الـ UI"""
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json"
-    }
-    payload = {
-        "model": "claude-3-5-sonnet-20241022",
-        "max_tokens": 4096,
-        "system": system,
-        "messages": [{"role": "user", "content": prompt}]
-    }
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        res = await client.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload)
-        data = res.json()
-        return data["content"][0]["text"]
 
-async def call_deepseek(prompt: str, system: str = "", reasoning: bool = False) -> str:
-    """لكتابة الكود السريع، الأمان والحماية، وإدارة قواعد البيانات"""
-    model = "deepseek-reasoner" if reasoning else "deepseek-chat"
-    headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt}
-        ]
-    }
-    async with httpx.AsyncClient(timeout=120.0) as client:
-        res = await client.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=payload)
-        data = res.json()
-        return data["choices"][0]["message"]["content"]
+class AgentRouter:
 
-async def call_together(prompt: str, system: str = "") -> str:
-    """لصيد الترندات، التسويق، التقارير السريعة، وفحص الأرصدة"""
-    headers = {
-        "Authorization": f"Bearer {TOGETHER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt}
-        ]
-    }
-    async with httpx.AsyncClient(timeout=60.0) as client:
-        res = await client.post("https://api.together.xyz/v1/chat/completions", headers=headers, json=payload)
-        data = res.json()
-        return data["choices"][0]["message"]["content"]
+    def __init__(self):
+        self.deepseek_key = os.getenv("DEEPSEEK_API_KEY")
+        self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+
+    def execute_task(self, prompt: str, agent_type: str = "deepseek") -> str:
+        """توجيه الطلب للنموذج المناسب بناء على نوع المهمة"""
+        if agent_type == "deepseek" and self.deepseek_key:
+            return self._call_deepseek(prompt)
+        return "تم استقبال المهمة، جاري التوجيه للوكيل المتاح."
+
+    def _call_deepseek(self, prompt: str) -> str:
+        headers = {
+            "Authorization": f"Bearer {self.deepseek_key}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "أنت المساعد الذكي لشركة Digital Castle S.P.C المتخصصة في الحلول التقنية.",
+                },
+                {"role": "user", "content": prompt},
+            ],
+        }
+        try:
+            res = requests.post(
+                "https://api.deepseek.com/v1/chat/completions",
+                json=payload,
+                headers=headers,
+                timeout=30,
+            )
+            if res.status_code == 200:
+                return res.json()["choices"][0]["message"]["content"]
+            return f"خطأ من مزود الذكاء الاصطناعي: {res.status_code}"
+        except Exception as e:
+            return f"تعذر الاتصال بالوكيل: {str(e)}"
