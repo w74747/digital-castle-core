@@ -45,20 +45,38 @@
       font-size: 15px;
     }
     
-    /* تنسيق قسم التوثيق والختم */
+    /* قسم التوثيق، الختم، والـ QR */
     .authorization-section {
-      margin-top: 50px;
+      margin-top: 40px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      padding-top: 20px;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 1px dashed #ccc;
     }
     
+    /* رمز الاستجابة السريعة QR */
+    .qr-container {
+      text-align: center;
+    }
+    .qr-container img {
+      width: 95px;
+      height: 95px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px;
+    }
+    .qr-label {
+      font-size: 9px;
+      color: #666;
+      margin-top: 3px;
+    }
+
     /* الختم الرقمي الأمني */
     .digital-seal {
-      width: 150px;
-      height: 150px;
-      border: 3px dashed #0056b3;
+      width: 130px;
+      height: 130px;
+      border: 2px dashed #0056b3;
       border-radius: 50%;
       display: flex;
       flex-direction: column;
@@ -68,36 +86,36 @@
       color: #0056b3;
       padding: 5px;
       box-sizing: border-box;
-      transform: rotate(-5deg);
+      transform: rotate(-3deg);
     }
     .seal-title {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: bold;
     }
     .seal-code {
-      font-size: 10px;
+      font-size: 9px;
       background: #eef5fc;
       padding: 2px 4px;
-      margin: 4px 0;
+      margin: 3px 0;
       font-family: monospace;
       font-weight: bold;
     }
     .seal-status {
-      font-size: 9px;
+      font-size: 8px;
       color: #28a745;
       font-weight: bold;
     }
 
-    /* صندوق التوقيع */
+    /* التوقيع المعتمد */
     .signature-box {
       text-align: center;
-      width: 200px;
-      border-top: 1px solid #666;
-      padding-top: 8px;
-      font-size: 13px;
+      width: 170px;
+      border-top: 1px solid #444;
+      padding-top: 6px;
+      font-size: 12px;
     }
     .sig-code {
-      font-size: 10px;
+      font-size: 9px;
       color: #777;
       font-family: monospace;
     }
@@ -148,8 +166,15 @@
     <h3 style="color: #0056b3;">الإجمالي الكلي: {{ "%.2f"|format(total) }} ر.ع.</h3>
   </div>
 
-  <!-- قسم التوثيق والختم المشفر -->
+  <!-- قسم التوثيق والختم والتحقق -->
   <div class="authorization-section">
+    {% if qr_code_base64 %}
+    <div class="qr-container">
+      <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Verification" />
+      <div class="qr-label">امسح للتحقق الأمني</div>
+    </div>
+    {% endif %}
+
     {% if include_stamp %}
     <div class="digital-seal">
       <div class="seal-title">القلعة الرقمية ش.ش.و</div>
