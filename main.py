@@ -11,14 +11,18 @@ from telegram.ext import (
 
 from app.agent_router import AgentRouter
 from app.document_engine import DocumentEngine
+from app.sequence_manager import SequenceManager
 
+# إعداد التسجيل وكتم سجلات التوكن الحساسة
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
 )
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 router = AgentRouter()
 doc_engine = DocumentEngine()
+seq_manager = SequenceManager()
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,33 +30,38 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🏰 **مرحباً بك في نظام Digital Castle S.P.C**\n\n"
         "النظام الآلي لإدارة المهام وتوليد الوثائق جاهز للعمل.\n"
         "الأوامر المتاحة:\n"
-        "/invoice - إنشاء فاتورة تجريبية\n"
-        "/ask [سؤال] - توجيه استفسار لوكلاء الذكاء الاصطناعي"
+        "/invoice - إنشاء فاتورة جديدة برقم تسلسلي\n"
+        "/ask [سؤال] - استشارة وكلاء الذكاء الاصطناعي"
     )
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
 
 async def invoice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # 1. استخراج الرقم التسلسلي التالي غير المتكرر
+    invoice_number = seq_manager.generate_next_number(doc_type="INV")
+
     sample_items = [
         {"description": "خدمات تطوير وبرمجة سحابية", "quantity": 1, "unit_price": 250.0},
         {"description": "إعداد بيئة الوكلاء والذكاء الاصطناعي", "quantity": 1, "unit_price": 150.0},
     ]
-    html_output = doc_engine.render_invoice_html(
-        invoice_number="INV-2026-001",
+
+    # 2. توليد ملف PDF
+    pdf_file = doc_engine.generate_invoice_pdf(
+        invoice_number=invoice_number,
         client_name="شركة عُمان للابتكار",
         client_contact="info@client.om",
         items=sample_items,
     )
 
-    with open("invoice.html", "w", encoding="utf-8") as f:
-        f.write(html_output)
+    # 3. إرسال الملف باسم الرقم التسلسلي (مثال: INV-2026-0001.pdf)
+    filename = f"{invoice_number}.pdf"
 
-    with open("invoice.html", "rb") as f:
-        await update.message.reply_document(
-            document=f,
-            filename="Digital_Castle_Invoice.html",
-            caption="📄 تم توليد الفاتورة بالهوية الرسمية.",
-        )
+    await update.message.reply_document(
+        document=pdf_file,
+        filename=filename,
+        caption=f"📄 **فاتورة رسمية صادرة**\nرقم المستند: `{invoice_number}`",
+        parse_mode="Markdown",
+    )
 
 
 async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
