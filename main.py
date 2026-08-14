@@ -11,6 +11,7 @@ from app.agent_router import AgentRouter
 from app.document_engine import DocumentEngine
 from app.sequence_manager import SequenceManager
 
+# إعداد السجلات وكتم التوكن الحساس
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
@@ -24,25 +25,25 @@ seq_manager = SequenceManager()
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     welcome_text = (
-        "🏰 **مرحباً بك في نظام Digital Castle S.P.C**\n\n"
+        "🏰 مرحباً بك في نظام **Digital Castle S.P.C**\n\n"
         "النظام الآلي لإدارة المهام وتوليد الوثائق جاهز للعمل.\n\n"
         "الأوامر المتاحة:\n"
-        "• `/invoice` - إنشاء فاتورة جديدة برقم تسلسلي\n"
+        "• `/invoice` - إنشاء فاتورة جديدة بصيغة PDF\n"
         "• `/ask [سؤال]` - استشارة وكيل الذكاء الاصطناعي"
     )
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
 
 async def invoice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    status_msg = await update.message.reply_text("⏳ جاري توليد الفاتورة بدقة عالية...")
     try:
-        status_msg = await update.message.reply_text("⏳ جاري توليد الفاتورة...")
-        
         invoice_number = seq_manager.generate_next_number(doc_type="INV")
         sample_items = [
             {"description": "خدمات تطوير وبرمجة سحابية", "quantity": 1, "unit_price": 250.0},
             {"description": "إعداد بيئة الوكلاء والذكاء الاصطناعي", "quantity": 1, "unit_price": 150.0},
         ]
 
+        # استدعاء Async Playwright
         pdf_file = await doc_engine.generate_invoice_pdf(
             invoice_number=invoice_number,
             client_name="شركة عُمان للابتكار",
@@ -60,26 +61,28 @@ async def invoice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await status_msg.delete()
     except Exception as e:
         logging.error(f"Error in invoice_command: {e}")
-        await update.message.reply_text(f"❌ حدث خطأ أثناء توليد الفاتورة: {str(e)}")
+        await status_msg.edit_text(f"❌ حدث خطأ أثناء توليد الفاتورة: {str(e)}")
 
 
 async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     prompt = " ".join(context.args)
     if not prompt:
-        await update.message.reply_text(
-            "يرجى كتابة الاستفسار بعد الأمر. مثال:\n`/ask خطة العمل للمشروع`",
-            parse_mode="Markdown",
-        )
+        await update.message.reply_text("يرجى كتابة الاستفسار بعد الأمر. مثال:\n`/ask خطة العمل`", parse_mode="Markdown")
         return
 
-    status_msg = await update.message.reply_text("⏳ جاري المعالجة عبر وكيل النظام...")
+    status_msg = await update.message.reply_text("⏳ جاري تحليل الطلب عبر وكيل النظام...")
     response = await router.execute_task(prompt)
     await status_msg.delete()
-    await update.message.reply_text(response)
+
+    # تقسيم الرد إذا تجاوز حد تيليجرام (4000 حرف لتجنب خطأ Message is too long)
+    chunk_size = 4000
+    for i in range(0, len(response), chunk_size):
+        chunk = response[i : i + chunk_size]
+        await update.message.reply_text(chunk)
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logging.error(msg="Exception while handling an update:", exc_info=context.error)
+    logging.error(msg="Exception while handling update:", exc_info=context.error)
 
 
 if __name__ == "__main__":
