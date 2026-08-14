@@ -1,7 +1,8 @@
+import os
 from datetime import datetime
 from io import BytesIO
 from jinja2 import Template
-from xhtml2pdf import pisa
+from playwright.sync_api import sync_playwright
 from config.brand_settings import BRAND
 
 
@@ -46,7 +47,21 @@ class DocumentEngine:
         html_content = self.render_invoice_html(
             invoice_number, client_name, client_contact, items
         )
-        pdf_buffer = BytesIO()
-        pisa.CreatePDF(src=html_content, dest=pdf_buffer, encoding="utf-8")
-        pdf_buffer.seek(0)
-        return pdf_buffer
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"]
+            )
+            page = browser.new_page()
+            # حقن الـ HTML في المتصفح الافتراضي
+            page.set_content(html_content, wait_until="networkidle")
+
+            # تصدير كـ PDF بمقاس A4 وتنسيق كامل
+            pdf_bytes = page.pdf(
+                format="A4",
+                print_background=True,
+                margin={"top": "20px", "bottom": "20px"},
+            )
+            browser.close()
+
+        return BytesIO(pdf_bytes)
