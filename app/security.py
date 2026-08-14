@@ -21,27 +21,26 @@ def generate_document_seal_code(
 def generate_verification_qr(
     doc_number: str, total_amount: float, date_str: str, security_code: str
 ) -> str:
-    """توليد رمز QR سريع القراءة لبيانات التحقق الرسمية"""
+    """توليد رمز QR عالي الدقة وسهل القراءة فورياً من أي هاتف"""
     qr_content = (
-        f"VERIFIED INVOICE\n"
-        f"Issuer: Digital Castle S.P.C\n"
-        f"Doc No: {doc_number}\n"
-        f"Total: {total_amount:.2f} OMR\n"
-        f"Date: {date_str}\n"
-        f"Security Ref: {security_code}\n"
-        f"Status: OFFICIAL & VALID"
+        f"القلعة الرقمية ش.ش.و | Digital Castle S.P.C\n"
+        f"رقم الفاتورة: {doc_number}\n"
+        f"الإجمالي: {total_amount:.2f} OMR\n"
+        f"التاريخ: {date_str}\n"
+        f"رمز التحقق: {security_code}\n"
+        f"الحالة: معتمد ورسمي"
     )
 
     qr = qrcode.QRCode(
         version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=6,
-        border=2,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
     )
     qr.add_data(qr_content)
     qr.make(fit=True)
 
-    img = qr.make_image(fill_color="#0a192f", back_color="white")
+    img = qr.make_image(fill_color="black", back_color="white")
     buffer = BytesIO()
     img.save(buffer, format="PNG")
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
@@ -58,7 +57,6 @@ def _load_pil_image_from_asset(file_path: str) -> Image.Image:
 
     try:
         text = raw_bytes.decode("utf-8").strip()
-        # إذا كان كود data:image أو HTML <img>
         match = re.search(r'data:image/[^;]+;base64,([A-Za-z0-9+/=]+)', text)
         if match:
             img_data = base64.b64decode(match.group(1))
@@ -75,10 +73,30 @@ def _load_pil_image_from_asset(file_path: str) -> Image.Image:
         return None
 
 
+def _get_scalable_font(target_size: int):
+    """تحميل خط واضح بالحجم المطلوب مع دعم أنظمة Linux / Docker"""
+    font_paths = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
+    ]
+    for p in font_paths:
+        if os.path.exists(p):
+            try:
+                return ImageFont.truetype(p, size=target_size)
+            except Exception:
+                pass
+    try:
+        return ImageFont.load_default(size=target_size)
+    except TypeError:
+        return ImageFont.load_default()
+
+
 def get_secure_stamped_asset(
     file_path: str, security_code: str, is_signature: bool = False
 ) -> str:
-    """طباعة البصمة الأمنية المشفرة داخل بكسلات الصورة مباشرة في الوسط"""
+    """طباعة البصمة الأمنية المشفرة بحجم واضح وبارز في منتصف الصورة مباشرة"""
     img = _load_pil_image_from_asset(file_path)
     if img is None:
         return ""
@@ -86,22 +104,22 @@ def get_secure_stamped_asset(
     width, height = img.size
     draw = ImageDraw.Draw(img)
 
-    # تجهيز نص البصمة
+    font_size = max(24, int(height * 0.12))
+    font = _get_scalable_font(font_size)
+
     label_text = f"Ref: {security_code}" if is_signature else security_code
 
     try:
-        # حساب أبعاد النص وموضعه في المنتصف
-        bbox = draw.textbbox((0, 0), label_text)
+        bbox = draw.textbbox((0, 0), label_text, font=font)
         text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]
     except Exception:
-        text_w, text_h = (len(label_text) * 8, 14)
+        text_w, text_h = (len(label_text) * (font_size * 0.6), font_size)
 
     center_x = (width - text_w) // 2
     center_y = (height - text_h) // 2
 
-    # رسم خلفية حماية مصغرة مدمجة مع الصورة لمنع قصها
-    padding_x, padding_y = 6, 3
+    padding_x, padding_y = int(font_size * 0.4), int(font_size * 0.25)
     box_rect = [
         center_x - padding_x,
         center_y - padding_y,
@@ -110,13 +128,31 @@ def get_secure_stamped_asset(
     ]
 
     if is_signature:
-        # شريط أمان مدمج مع خطوط التوقيع
-        draw.rectangle(box_rect, fill=(241, 245, 249, 210), outline=(71, 85, 105, 240), width=1)
-        draw.text((center_x, center_y), label_text, fill=(15, 23, 42, 255))
+        draw.rectangle(
+            box_rect,
+            fill=(241, 245, 249, 235),
+            outline=(15, 23, 42, 255),
+            width=2,
+        )
+        draw.text(
+            (center_x, center_y),
+            label_text,
+            fill=(15, 23, 42, 255),
+            font=font,
+        )
     else:
-        # شريط أمان مدمج في قلب الختم الرسمي
-        draw.rectangle(box_rect, fill=(255, 255, 255, 220), outline=(185, 28, 28, 230), width=1)
-        draw.text((center_x, center_y), label_text, fill=(185, 28, 28, 255))
+        draw.rectangle(
+            box_rect,
+            fill=(255, 255, 255, 245),
+            outline=(185, 28, 28, 255),
+            width=2,
+        )
+        draw.text(
+            (center_x, center_y),
+            label_text,
+            fill=(185, 28, 28, 255),
+            font=font,
+        )
 
     buffer = BytesIO()
     img.save(buffer, format="PNG")
