@@ -6,6 +6,7 @@ from playwright.async_api import async_playwright
 from app.security import (
     generate_document_seal_code,
     generate_verification_qr,
+    get_asset_base64,
 )
 from config.brand_settings import BRAND
 
@@ -22,8 +23,6 @@ class DocumentEngine:
         client_name: str,
         client_contact: str,
         items: list,
-        include_stamp: bool = True,
-        include_signature: bool = True,
     ) -> str:
         subtotal = sum(
             item["quantity"] * item["unit_price"] for item in items
@@ -32,15 +31,17 @@ class DocumentEngine:
         total = subtotal + tax
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-        # 1. توليد كود الأمان المشفر
+        # 1. توليد كود الأمان المشفر والـ QR
         security_code = generate_document_seal_code(
             invoice_number, total, date_str
         )
-
-        # 2. توليد صورة الـ QR Code
         qr_base64 = generate_verification_qr(
             invoice_number, total, date_str, security_code
         )
+
+        # 2. تحميل صورة التوقيع والختم (إن وجدا في مجلد assets)
+        sig_base64 = get_asset_base64("assets/signature.png")
+        stamp_base64 = get_asset_base64("assets/stamp.png")
 
         return self.template.render(
             brand=BRAND,
@@ -52,10 +53,10 @@ class DocumentEngine:
             subtotal=subtotal,
             tax=tax,
             total=total,
-            include_stamp=include_stamp,
-            include_signature=include_signature,
             security_code=security_code,
             qr_code_base64=qr_base64,
+            signature_base64=sig_base64,
+            stamp_base64=stamp_base64,
         )
 
     async def generate_invoice_pdf(
@@ -64,16 +65,9 @@ class DocumentEngine:
         client_name: str,
         client_contact: str,
         items: list,
-        include_stamp: bool = True,
-        include_signature: bool = True,
     ) -> BytesIO:
         html_content = self.render_invoice_html(
-            invoice_number,
-            client_name,
-            client_contact,
-            items,
-            include_stamp,
-            include_signature,
+            invoice_number, client_name, client_contact, items
         )
 
         async with async_playwright() as p:
@@ -91,7 +85,7 @@ class DocumentEngine:
             pdf_bytes = await page.pdf(
                 format="A4",
                 print_background=True,
-                margin={"top": "20px", "bottom": "20px"},
+                margin={"top": "15px", "bottom": "15px"},
             )
             await browser.close()
 
