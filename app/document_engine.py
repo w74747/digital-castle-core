@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from io import BytesIO
 from jinja2 import Template
-from playwright.sync_api import sync_playwright
+from playwright.async_api import async_playwright
 from config.brand_settings import BRAND
 
 
@@ -37,7 +37,7 @@ class DocumentEngine:
             total=total,
         )
 
-    def generate_invoice_pdf(
+    async def generate_invoice_pdf(
         self,
         invoice_number: str,
         client_name: str,
@@ -48,20 +48,19 @@ class DocumentEngine:
             invoice_number, client_name, client_contact, items
         )
 
-        with sync_playwright() as p:
-            browser = p.chromium.launch(
-                headless=True, args=["--no-sandbox", "--disable-setuid-sandbox"]
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-setuid-sandbox", "--disable-gpu"],
             )
-            page = browser.new_page()
-            # حقن الـ HTML في المتصفح الافتراضي
-            page.set_content(html_content, wait_until="networkidle")
+            page = await browser.new_page()
+            await page.set_content(html_content, wait_until="networkidle")
 
-            # تصدير كـ PDF بمقاس A4 وتنسيق كامل
-            pdf_bytes = page.pdf(
+            pdf_bytes = await page.pdf(
                 format="A4",
                 print_background=True,
                 margin={"top": "20px", "bottom": "20px"},
             )
-            browser.close()
+            await browser.close()
 
         return BytesIO(pdf_bytes)
