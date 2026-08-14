@@ -1,6 +1,8 @@
-python-telegram-bot[job-queue]==21.10
+python-telegram-bot[job-queue]==20.10
 httpx==0.28.1
 PyGithub==2.6.0
 pydantic==2.10.6
-jinja2==3.1.5
+jinja2==3.1.0
 python-dotenv==1.0.1
+pytest>=7.4.0
+requests>=2.31.0
