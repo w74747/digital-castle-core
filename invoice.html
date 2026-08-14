@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>DC-INV-{{invoice_no}} · Digital Castle S.P.C</title>
+<link rel="stylesheet" href="../tokens/dc-tokens.css" />
+<style>
+  /* Page-local layout only. All colour and type comes from dc-tokens.css. */
+  .sheet { max-width: 170mm; margin: 0 auto; padding: var(--dc-8) 0; display: flex; flex-direction: column; min-height: 257mm; }
+  .fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--dc-5); padding: var(--dc-5) 0; border-bottom: var(--dc-hairline); }
+  .parties { display: grid; grid-template-columns: 1fr 1fr; gap: var(--dc-7); padding: var(--dc-5) 0 var(--dc-6); }
+  .totals { width: 320px; margin-left: auto; margin-top: var(--dc-5); }
+  .totals .row { display: flex; justify-content: space-between; padding: var(--dc-2) 0; color: var(--dc-graphite); }
+  .pay { display: grid; grid-template-columns: 1fr 1fr; gap: var(--dc-6); margin-top: var(--dc-6); padding-top: var(--dc-5); border-top: var(--dc-hairline); }
+  .sigs { display: flex; justify-content: space-between; align-items: flex-end; margin-top: var(--dc-7); }
+  .seal { width: 130px; height: 100px; border: 1px dashed var(--dc-frost-deep); display: grid; place-items: center; }
+  .foot { margin-top: auto; padding-top: var(--dc-6); }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="dc-doc-header">
+    <img src="../logo/digital-castle-primary.svg" alt="القلعة الرقمية ش.ش.و · Digital Castle S.P.C" />
+    <div style="text-align:right;display:grid;gap:5px">
+      <span class="dc-eyebrow">Official Commercial Invoice</span>
+      <span class="dc-eyebrow" dir="rtl">فاتورة رسمية معتمدة</span>
+    </div>
+  </header>
+
+  <div class="fields">
+    <div><div class="dc-eyebrow">Invoice No.</div><div class="dc-meta">{{invoice_no}}</div></div>
+    <div><div class="dc-eyebrow">Issue Date</div><div class="dc-meta">{{issue_date}}</div></div>
+    <div><div class="dc-eyebrow">Due Date</div><div class="dc-meta">{{due_date}}</div></div>
+    <div><div class="dc-eyebrow">Currency</div><div class="dc-meta">{{currency}}</div></div>
+  </div>
+
+  <div class="parties">
+    <div>
+      <div class="dc-eyebrow">Billed To · الجهة المستفيدة</div>
+      <h3 style="margin:10px 0 6px">{{client_name}}</h3>
+      <div style="color:var(--dc-graphite);line-height:1.7">{{client_address}}<br />C.R. / VAT: {{client_cr}}</div>
+    </div>
+    <div>
+      <div class="dc-eyebrow">Issued By · الجهة المُصدِرة</div>
+      <h3 style="margin:10px 0 6px">Digital Castle S.P.C</h3>
+      <div style="color:var(--dc-graphite);line-height:1.7">C.R. 1197389 · VAT {{vat_id}}<br />Muscat, Sultanate of Oman<br />info@DigitalCastle.io · +968 9969 6333</div>
+    </div>
+  </div>
+
+  <table class="dc-table">
+    <thead><tr>
+      <th style="width:34px">#</th><th>Description of Services</th>
+      <th class="dc-num" style="width:60px">Qty</th>
+      <th class="dc-num" style="width:110px">Unit Rate</th>
+      <th class="dc-num" style="width:120px">Amount</th>
+    </tr></thead>
+    <tbody>
+      <!-- repeat per line item -->
+      <tr>
+        <td class="dc-meta" style="color:var(--dc-mist)">{{line.index}}</td>
+        <td>{{line.title}}<div style="color:var(--dc-mist);margin-top:3px">{{line.note}}</div></td>
+        <td class="dc-num">{{line.qty}}</td>
+        <td class="dc-num">{{line.rate}}</td>
+        <td class="dc-num">{{line.amount}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div class="row"><span>Subtotal</span><span class="dc-num">{{subtotal}}</span></div>
+    <div class="row" style="border-bottom:var(--dc-hairline)"><span>VAT · {{vat_rate}}</span><span class="dc-num">{{vat_amount}}</span></div>
+    <div class="dc-total">
+      <span class="dc-eyebrow">Total Due · الإجمالي المستحق</span>
+      <span class="dc-total__value">{{currency}} {{total}}</span>
+    </div>
+  </div>
+
+  <div class="pay">
+    <div>
+      <div class="dc-eyebrow">Payment Instructions</div>
+      <div style="color:var(--dc-graphite);line-height:1.75;margin-top:10px">
+        Beneficiary · Digital Castle S.P.C<br />Bank · {{bank_name}}<br />IBAN · {{iban}}<br />SWIFT · {{swift}}<br />Reference · {{invoice_no}}
+      </div>
+    </div>
+    <div class="dc-callout">
+      <div class="dc-callout__title">Terms</div>
+      Payment due within 30 days of invoice date. Late settlement may attract charges as per the governing agreement. All amounts in {{currency}} unless stated otherwise.
+    </div>
+  </div>
+
+  <div class="sigs">
+    <div class="dc-sign"><span class="dc-eyebrow">Authorised Signatory</span></div>
+    <div class="seal"><span class="dc-eyebrow">Company Seal</span></div>
+  </div>
+
+  <div class="foot">
+    <div class="dc-doc-footer">
+      <span>Digital Castle S.P.C · C.R. 1197389 · VAT {{vat_id}} · Muscat, Oman</span>
+      <span>DigitalCastle.io · +968 9969 6333</span>
+      <span class="dc-meta">1 / 1</span>
+    </div>
+    <div class="dc-confidential">Confidential — property of Digital Castle S.P.C. · سرّي — ملك للقلعة الرقمية ش.ش.و</div>
+  </div>
+
+</div>
+</body>
+</html>
