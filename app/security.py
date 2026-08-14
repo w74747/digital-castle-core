@@ -1,26 +1,22 @@
 import base64
 import hashlib
-from io import BytesIO
 import os
 import re
-from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 import qrcode
+from PIL import Image, ImageDraw, ImageFont
 
 SECRET_KEY = os.getenv("APP_SECRET_KEY", "digital-castle-secure-key-2026")
 
 
-def generate_document_seal_code(
-    doc_number: str, total_amount: float, date_str: str
-) -> str:
+def generate_document_seal_code(doc_number: str, total_amount: float, date_str: str) -> str:
     """توليد كود أمان تسلسلي مشفر وفريد للفاتورة"""
     payload = f"{doc_number}:{total_amount:.2f}:{date_str}:{SECRET_KEY}"
     hash_digest = hashlib.sha256(payload.encode()).hexdigest().upper()
     return f"DC-{hash_digest[:4]}-{hash_digest[4:8]}"
 
 
-def generate_verification_qr(
-    doc_number: str, total_amount: float, date_str: str, security_code: str
-) -> str:
+def generate_verification_qr(doc_number: str, total_amount: float, date_str: str, security_code: str) -> str:
     """توليد رمز QR عالي الدقة وسهل القراءة فورياً من أي هاتف"""
     qr_content = (
         f"القلعة الرقمية ش.ش.و | Digital Castle S.P.C\n"
@@ -74,7 +70,7 @@ def _load_pil_image_from_asset(file_path: str) -> Image.Image:
 
 
 def _get_scalable_font(target_size: int):
-    """تحميل خط واضح بالحجم المطلوب مع دعم أنظمة Linux / Docker"""
+    """تحميل خط عريض وواضح بالحجم المطلوب"""
     font_paths = [
         "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
         "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf",
@@ -93,69 +89,59 @@ def _get_scalable_font(target_size: int):
         return ImageFont.load_default()
 
 
-def get_secure_stamped_asset(
-    file_path: str, security_code: str, is_signature: bool = False
-) -> str:
-    """طباعة البصمة الأمنية المشفرة بحجم واضح وبارز في منتصف الصورة مباشرة"""
+def get_secure_stamped_asset(file_path: str, security_code: str, is_signature: bool = False) -> str:
+    """دمج كود الأمان كعلامة مائية شفافة تماماً بدون أي خلفية أو حجب"""
     img = _load_pil_image_from_asset(file_path)
     if img is None:
         return ""
 
     width, height = img.size
-    draw = ImageDraw.Draw(img)
 
-    font_size = max(24, int(height * 0.12))
+    # حجم خط متناسق مع أبعاد الصورة
+    font_size = max(26, int(height * 0.16))
     font = _get_scalable_font(font_size)
 
     label_text = f"Ref: {security_code}" if is_signature else security_code
+
+    # إنشاء طبقة مائية شفافة مستقلة
+    watermark_layer = Image.new("RGBA", (width, height), (255, 255, 255, 0))
+    draw = ImageDraw.Draw(watermark_layer)
 
     try:
         bbox = draw.textbbox((0, 0), label_text, font=font)
         text_w = bbox[2] - bbox[0]
         text_h = bbox[3] - bbox[1]
     except Exception:
-        text_w, text_h = (len(label_text) * (font_size * 0.6), font_size)
+        text_w, text_h = (len(label_text) * int(font_size * 0.6), font_size)
 
-    center_x = (width - text_w) // 2
-    center_y = (height - text_h) // 2
+    # إنشاء قماش مخصص للنص لتدويره بزاوية أمنية أنيقة (-10 درجات)
+    text_canvas = Image.new("RGBA", (text_w + 30, text_h + 20), (255, 255, 255, 0))
+    text_draw = ImageDraw.Draw(text_canvas)
 
-    padding_x, padding_y = int(font_size * 0.4), int(font_size * 0.25)
-    box_rect = [
-        center_x - padding_x,
-        center_y - padding_y,
-        center_x + text_w + padding_x,
-        center_y + text_h + padding_y,
-    ]
-
+    # لون العلامة المائية مع شفافية تسمح برؤية الختم والتوقيع بوضوح
     if is_signature:
-        draw.rectangle(
-            box_rect,
-            fill=(241, 245, 249, 235),
-            outline=(15, 23, 42, 255),
-            width=2,
-        )
-        draw.text(
-            (center_x, center_y),
-            label_text,
-            fill=(15, 23, 42, 255),
-            font=font,
-        )
+        # لون كحلي شبه شفاف يندمج مع خطوط التوقيع
+        text_color = (29, 78, 216, 175)
     else:
-        draw.rectangle(
-            box_rect,
-            fill=(255, 255, 255, 245),
-            outline=(185, 28, 28, 255),
-            width=2,
-        )
-        draw.text(
-            (center_x, center_y),
-            label_text,
-            fill=(185, 28, 28, 255),
-            font=font,
-        )
+        # لون أحمر قرمزي شبه شفاف لختم الشركة
+        text_color = (220, 38, 38, 185)
+
+    text_draw.text((15, 10), label_text, fill=text_color, font=font)
+
+    # تدوير النص مائلاً ليعطي مظهر العلامة المائية الرسمية
+    rotated_text = text_canvas.rotate(10, resample=Image.BICUBIC, expand=True)
+
+    # وضع العلامة المائية في منتصف الصورة
+    rot_w, rot_h = rotated_text.size
+    pos_x = (width - rot_w) // 2
+    pos_y = (height - rot_h) // 2
+
+    # دمج طبقة العلامة المائية فوق الصورة مباشرة
+    watermark_layer.paste(rotated_text, (pos_x, pos_y), rotated_text)
+    combined = Image.alpha_composite(img, watermark_layer)
 
     buffer = BytesIO()
-    img.save(buffer, format="PNG")
+    combined.save(buffer, format="PNG")
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
     return f"data:image/png;base64,{b64}"
 
