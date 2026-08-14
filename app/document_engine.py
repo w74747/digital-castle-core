@@ -31,7 +31,7 @@ class DocumentEngine:
         total = subtotal + tax
         date_str = datetime.now().strftime("%Y-%m-%d")
 
-        # 1. توليد كود الأمان المشفر والـ QR
+        # 1. توليد رمز الأمان والـ QR
         security_code = generate_document_seal_code(
             invoice_number, total, date_str
         )
@@ -39,7 +39,8 @@ class DocumentEngine:
             invoice_number, total, date_str, security_code
         )
 
-        # 2. تحميل صورة التوقيع والختم (إن وجدا في مجلد assets)
+        # 2. قراءة الأصول الرسمية المرفوعة
+        logo_base64 = get_asset_base64("assets/logo.png")
         sig_base64 = get_asset_base64("assets/signature.png")
         stamp_base64 = get_asset_base64("assets/stamp.png")
 
@@ -55,6 +56,7 @@ class DocumentEngine:
             total=total,
             security_code=security_code,
             qr_code_base64=qr_base64,
+            logo_base64=logo_base64,
             signature_base64=sig_base64,
             stamp_base64=stamp_base64,
         )
