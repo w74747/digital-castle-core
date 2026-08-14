@@ -1,5 +1,5 @@
 import os
-import requests
+import httpx
 
 
 class AgentRouter:
@@ -8,13 +8,12 @@ class AgentRouter:
         self.deepseek_key = os.getenv("DEEPSEEK_API_KEY")
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY")
 
-    def execute_task(self, prompt: str, agent_type: str = "deepseek") -> str:
-        """توجيه الطلب للنموذج المناسب بناء على نوع المهمة"""
+    async def execute_task(self, prompt: str, agent_type: str = "deepseek") -> str:
         if agent_type == "deepseek" and self.deepseek_key:
-            return self._call_deepseek(prompt)
-        return "تم استقبال المهمة، جاري التوجيه للوكيل المتاح."
+            return await self._call_deepseek(prompt)
+        return "⚠️ مفتاح DEEPSEEK_API_KEY غير مفعّل أو غير متوفر."
 
-    def _call_deepseek(self, prompt: str) -> str:
+    async def _call_deepseek(self, prompt: str) -> str:
         headers = {
             "Authorization": f"Bearer {self.deepseek_key}",
             "Content-Type": "application/json",
@@ -24,20 +23,20 @@ class AgentRouter:
             "messages": [
                 {
                     "role": "system",
-                    "content": "أنت المساعد الذكي لشركة Digital Castle S.P.C المتخصصة في الحلول التقنية.",
+                    "content": "أنت المستشار التقني لشركة Digital Castle S.P.C. أجب بأسلوب احترافي وعملي.",
                 },
                 {"role": "user", "content": prompt},
             ],
         }
         try:
-            res = requests.post(
-                "https://api.deepseek.com/v1/chat/completions",
-                json=payload,
-                headers=headers,
-                timeout=30,
-            )
-            if res.status_code == 200:
-                return res.json()["choices"][0]["message"]["content"]
-            return f"خطأ من مزود الذكاء الاصطناعي: {res.status_code}"
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                res = await client.post(
+                    "https://api.deepseek.com/chat/completions",
+                    json=payload,
+                    headers=headers,
+                )
+                if res.status_code == 200:
+                    return res.json()["choices"][0]["message"]["content"]
+                return f"⚠️ استجابة غير متوقعة من المزود: {res.status_code} - {res.text}"
         except Exception as e:
-            return f"تعذر الاتصال بالوكيل: {str(e)}"
+            return f"❌ خطأ أثناء الاتصال بالوكيل الذكي: {str(e)}"
