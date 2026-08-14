@@ -3,6 +3,7 @@ from datetime import datetime
 from io import BytesIO
 from jinja2 import Template
 from playwright.async_api import async_playwright
+from app.security import generate_document_seal_code
 from config.brand_settings import BRAND
 
 
@@ -18,23 +19,34 @@ class DocumentEngine:
         client_name: str,
         client_contact: str,
         items: list,
+        include_stamp: bool = True,
+        include_signature: bool = True,
     ) -> str:
         subtotal = sum(
             item["quantity"] * item["unit_price"] for item in items
         )
         tax = subtotal * BRAND.tax_rate
         total = subtotal + tax
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+        # توليد البصمة الأمنية
+        security_code = generate_document_seal_code(
+            invoice_number, total, date_str
+        )
 
         return self.template.render(
             brand=BRAND,
             invoice_number=invoice_number,
-            date=datetime.now().strftime("%Y-%m-%d"),
+            date=date_str,
             client_name=client_name,
             client_contact=client_contact,
             items=items,
             subtotal=subtotal,
             tax=tax,
             total=total,
+            include_stamp=include_stamp,
+            include_signature=include_signature,
+            security_code=security_code,
         )
 
     async def generate_invoice_pdf(
@@ -43,9 +55,16 @@ class DocumentEngine:
         client_name: str,
         client_contact: str,
         items: list,
+        include_stamp: bool = True,
+        include_signature: bool = True,
     ) -> BytesIO:
         html_content = self.render_invoice_html(
-            invoice_number, client_name, client_contact, items
+            invoice_number,
+            client_name,
+            client_contact,
+            items,
+            include_stamp,
+            include_signature,
         )
 
         async with async_playwright() as p:
