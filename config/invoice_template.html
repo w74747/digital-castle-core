@@ -3,194 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    @page {
+      size: A4;
       margin: 0;
-      padding: 30px;
-      color: #333;
-      background: #fff;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background-color: #ffffff;
+      color: #1e293b;
+      -webkit-print-color-adjust: exact;
+    }
+    .invoice-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 35px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    .top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #1d4ed8, #3b82f6);
     }
     .header {
       display: flex;
       justify-content: space-between;
-      border-bottom: 2px solid #0056b3;
-      padding-bottom: 15px;
+      align-items: flex-start;
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 20px;
     }
-    .company-title {
-      font-size: 22px;
-      font-weight: bold;
-      color: #0056b3;
+    .brand-title {
+      font-size: 26px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 4px;
     }
-    .invoice-details {
-      margin-top: 20px;
+    .brand-sub {
+      font-size: 13px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .doc-meta {
+      text-align: left;
       font-size: 14px;
+      line-height: 1.6;
+    }
+    .doc-meta strong {
+      color: #334155;
+    }
+    .client-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 25px 0;
+      font-size: 14px;
+      line-height: 1.7;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 25px;
-    }
-    th, td {
-      border: 1px solid #e0e0e0;
-      padding: 10px;
-      text-align: right;
+      margin-top: 15px;
     }
     th {
-      background-color: #0a192f;
-      color: white;
+      background-color: #0f172a;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 13px;
+      padding: 12px 14px;
+      text-align: right;
     }
-    .totals {
-      margin-top: 20px;
-      text-align: left;
-      font-size: 15px;
+    th:first-child { border-top-right-radius: 6px; }
+    th:last-child { border-top-left-radius: 6px; }
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 13.5px;
+      color: #334155;
     }
-    
-    /* قسم التوثيق، الختم، والـ QR */
-    .authorization-section {
+    .totals-area {
+      margin-top: 25px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-table {
+      width: 320px;
+      font-size: 14px;
+      line-height: 2;
+    }
+    .grand-total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1d4ed8;
+      border-top: 2px solid #e2e8f0;
+      padding-top: 6px;
+    }
+
+    /* منطقة التوثيق والختم والتوقيع */
+    .auth-footer {
       margin-top: 40px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 15px;
-      border-top: 1px dashed #ccc;
+      padding-top: 20px;
+      border-top: 1px dashed #cbd5e1;
     }
-    
-    /* رمز الاستجابة السريعة QR */
-    .qr-container {
+    .qr-box {
       text-align: center;
     }
-    .qr-container img {
-      width: 95px;
-      height: 95px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 2px;
+    .qr-box img {
+      width: 90px;
+      height: 90px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
     }
-    .qr-label {
-      font-size: 9px;
-      color: #666;
-      margin-top: 3px;
+    .qr-text {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
-    /* الختم الرقمي الأمني */
-    .digital-seal {
-      width: 130px;
-      height: 130px;
-      border: 2px dashed #0056b3;
+    /* الختم الفعلي / الديناميكي */
+    .stamp-container {
+      position: relative;
+      width: 140px;
+      text-align: center;
+    }
+    .official-stamp {
+      width: 120px;
+      height: 120px;
+      border: 3px double #b91c1c;
       border-radius: 50%;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      text-align: center;
-      color: #0056b3;
-      padding: 5px;
+      color: #b91c1c;
+      padding: 6px;
       box-sizing: border-box;
-      transform: rotate(-3deg);
+      transform: rotate(-6deg);
+      background: rgba(254, 242, 242, 0.4);
     }
-    .seal-title {
-      font-size: 10px;
-      font-weight: bold;
+    .stamp-img {
+      width: 120px;
+      height: 120px;
+      transform: rotate(-6deg);
+      opacity: 0.88;
     }
-    .seal-code {
-      font-size: 9px;
-      background: #eef5fc;
-      padding: 2px 4px;
-      margin: 3px 0;
-      font-family: monospace;
-      font-weight: bold;
-    }
-    .seal-status {
-      font-size: 8px;
-      color: #28a745;
-      font-weight: bold;
-    }
+    .stamp-text-ar { font-size: 10px; font-weight: bold; }
+    .stamp-text-en { font-size: 8px; font-weight: bold; letter-spacing: 0.5px; }
+    .stamp-code { font-size: 8.5px; font-family: monospace; font-weight: bold; margin: 2px 0; }
 
-    /* التوقيع المعتمد */
-    .signature-box {
+    /* التوقيع الخطي وبصمة الحماية */
+    .signature-container {
+      width: 180px;
       text-align: center;
-      width: 170px;
-      border-top: 1px solid #444;
-      padding-top: 6px;
-      font-size: 12px;
+      position: relative;
     }
-    .sig-code {
-      font-size: 9px;
-      color: #777;
+    .sig-img {
+      max-height: 55px;
+      max-width: 140px;
+      margin-bottom: -10px;
+    }
+    .signature-line {
+      border-top: 1.5px solid #475569;
+      padding-top: 6px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #1e293b;
+    }
+    .sig-security-ref {
+      font-size: 9.5px;
       font-family: monospace;
+      color: #64748b;
+      margin-top: 2px;
+      background: #f1f5f9;
+      padding: 1px 4px;
+      border-radius: 3px;
+      display: inline-block;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div>
-      <div class="company-title">{{ brand.name_ar }}</div>
-      <div>{{ brand.name_en }} - سلطنة عُمان</div>
+  <div class="invoice-card">
+    <div class="top-bar"></div>
+
+    <div class="header">
+      <div>
+        <div class="brand-title">{{ brand.name_ar }}</div>
+        <div class="brand-sub">{{ brand.name_en }} - سلطنة عُمان</div>
+      </div>
+      <div class="doc-meta">
+        <div><strong>رقم الفاتورة:</strong> {{ invoice_number }}</div>
+        <div><strong>التاريخ:</strong> {{ date }}</div>
+      </div>
     </div>
-    <div style="text-align: left;">
-      <div><strong>رقم الفاتورة:</strong> {{ invoice_number }}</div>
-      <div><strong>التاريخ:</strong> {{ date }}</div>
+
+    <div class="client-box">
+      <strong>العميل:</strong> {{ client_name }}<br>
+      <strong>البريد الإلكتروني / الهاتف:</strong> {{ client_contact }}
     </div>
-  </div>
 
-  <div class="invoice-details">
-    <strong>العميل:</strong> {{ client_name }}<br>
-    <strong>بيانات الاتصال:</strong> {{ client_contact }}
-  </div>
+    <table>
+      <thead>
+        <tr>
+          <th>الوصف</th>
+          <th style="width: 12%; text-align: center;">الكمية</th>
+          <th style="width: 20%;">السعر (ر.ع.)</th>
+          <th style="width: 20%;">الإجمالي (ر.ع.)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>{{ item.description }}</td>
+          <td style="text-align: center;">{{ item.quantity }}</td>
+          <td>{{ "%.2f"|format(item.unit_price) }}</td>
+          <td>{{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-  <table>
-    <thead>
-      <tr>
-        <th>الوصف</th>
-        <th style="width: 10%;">الكمية</th>
-        <th style="width: 20%;">السعر الوحدة (ر.ع.)</th>
-        <th style="width: 20%;">الإجمالي (ر.ع.)</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.description }}</td>
-        <td>{{ item.quantity }}</td>
-        <td>{{ "%.2f"|format(item.unit_price) }}</td>
-        <td>{{ "%.2f"|format(item.quantity * item.unit_price) }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="totals">
-    <p>المجموع الفرعي: {{ "%.2f"|format(subtotal) }} ر.ع.</p>
-    <p>ضريبة القيمة المضافة (5%): {{ "%.2f"|format(tax) }} ر.ع.</p>
-    <h3 style="color: #0056b3;">الإجمالي الكلي: {{ "%.2f"|format(total) }} ر.ع.</h3>
-  </div>
-
-  <!-- قسم التوثيق والختم والتحقق -->
-  <div class="authorization-section">
-    {% if qr_code_base64 %}
-    <div class="qr-container">
-      <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Verification" />
-      <div class="qr-label">امسح للتحقق الأمني</div>
+    <div class="totals-area">
+      <div class="totals-table">
+        <div style="display: flex; justify-content: space-between;">
+          <span>المجموع الفرعي:</span>
+          <span>{{ "%.2f"|format(subtotal) }} ر.ع.</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>ضريبة القيمة المضافة (5%):</span>
+          <span>{{ "%.2f"|format(tax) }} ر.ع.</span>
+        </div>
+        <div class="grand-total" style="display: flex; justify-content: space-between;">
+          <span>الإجمالي الكلي:</span>
+          <span>{{ "%.2f"|format(total) }} ر.ع.</span>
+        </div>
+      </div>
     </div>
-    {% endif %}
 
-    {% if include_stamp %}
-    <div class="digital-seal">
-      <div class="seal-title">القلعة الرقمية ش.ش.و</div>
-      <div class="seal-title">DIGITAL CASTLE</div>
-      <div class="seal-code">{{ security_code }}</div>
-      <div class="seal-status">✓ معتمد وموثق</div>
-    </div>
-    {% endif %}
+    <!-- قسم التوثيق، الختم، والتوقيع -->
+    <div class="auth-footer">
+      <!-- رمز الـ QR السريع -->
+      <div class="qr-box">
+        <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Verification" />
+        <div class="qr-text">امسح للتحقق الرسمي</div>
+      </div>
 
-    {% if include_signature %}
-    <div class="signature-box">
-      <strong>التوقيع المعتمد</strong>
-      <div>الإدارة التنفيذية</div>
-      <div class="sig-code">Ref: {{ security_code }}</div>
+      <!-- الختم الرسمي -->
+      <div class="stamp-container">
+        {% if stamp_base64 %}
+          <img src="data:image/png;base64,{{ stamp_base64 }}" class="stamp-img" alt="Official Stamp" />
+          <div class="sig-security-ref">{{ security_code }}</div>
+        {% else %}
+          <div class="official-stamp">
+            <div class="stamp-text-ar">القلعة الرقمية ش.ش.و</div>
+            <div class="stamp-text-en">DIGITAL CASTLE</div>
+            <div class="stamp-code">{{ security_code }}</div>
+            <div style="font-size: 7.5px; font-weight: bold;">معتمد وموثق</div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- التوقيع الخطي وبصمة الحماية -->
+      <div class="signature-container">
+        {% if signature_base64 %}
+          <img src="data:image/png;base64,{{ signature_base64 }}" class="sig-img" alt="Signature" />
+        {% endif %}
+        <div class="signature-line">التوقيع المعتمد</div>
+        <div class="sig-security-ref">Security Ref: {{ security_code }}</div>
+      </div>
     </div>
-    {% endif %}
+
   </div>
 
 </body>
