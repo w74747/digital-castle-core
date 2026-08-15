@@ -13,3 +13,7 @@ def health():
 @app.get("/api/status")
 def status():
     return {"status": "online", "agents": 22}
+
+@app.get("/api/agents")
+def agents():
+    return {"agents": ["Dev", "DevOps", "QA"], "count": 22}
