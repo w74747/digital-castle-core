@@ -63,7 +63,7 @@ class DigitalCastleOrchestrator:
                     headers={"Authorization": f"Bearer {self.together_key}"},
                     json={
                         "model": "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-                        "messages": [{"role": "user", "content": f"Review this code:\n{code}\n\nIs it production-ready?"}],
+                        "messages": [{"role": "user", "content": f"Review this code:\n{code}\n\nIs it production-ready? Any issues?"}],
                         "max_tokens": 1024
                     },
                     timeout=60
@@ -81,10 +81,16 @@ class DigitalCastleOrchestrator:
         print(f"🚀 مهمة: {task_name}")
         print(f"{'='*60}\n")
         
+        # 1. Claude يخطط
         plan = await self.claude_plan(description)
+        
+        # 2. DeepSeek يكتب
         code = await self.deepseek_code(task_name, str(plan))
+        
+        # 3. Together يقيّم
         review = await self.together_review(task_name, str(code))
         
+        # حفظ النتيجة
         result = {
             "task": task_name,
             "timestamp": datetime.now().isoformat(),
@@ -94,6 +100,7 @@ class DigitalCastleOrchestrator:
         }
         
         self.tasks_completed.append(result)
+        
         print(f"\n✨ اكتملت: {task_name}\n")
         return result
     
@@ -103,36 +110,50 @@ class DigitalCastleOrchestrator:
         tasks = [
             {
                 "name": "Telegram Bot Orchestrator",
-                "description": "Create bot_orchestrator.py with Telegram bot and commands"
+                "description": "Create bot_orchestrator.py - Telegram bot that manages Digital Castle with commands like /start, /deploy, /status"
             },
             {
                 "name": "Agent Router",
-                "description": "Create agent_router.py - routes tasks to 3 APIs"
+                "description": "Create agent_router.py - Routes tasks to Claude (planning), DeepSeek (coding), Together (QA)"
             },
             {
                 "name": "Document Engine",
-                "description": "Create app/document_engine.py - PDF generation"
+                "description": "Create app/document_engine.py - Converts HTML templates to PDF using Jinja2 and Playwright for invoices and reports"
             },
             {
                 "name": "Security Module",
-                "description": "Create app/security.py - encryption and watermarking"
+                "description": "Create app/security.py - SHA-256 watermarking, encryption/decryption for sensitive documents"
+            },
+            {
+                "name": "FastAPI Application",
+                "description": "Create main app.py - FastAPI with all endpoints for Digital Castle operations"
+            },
+            {
+                "name": "Telegram Commands",
+                "description": "Add Telegram command handlers: /invoice, /report, /deploy, /status, /watermark"
             }
         ]
         
-        print("\n🏰 Digital Castle - Build Starting\n")
+        print("\n🏰 Digital Castle - Autonomous Build Starting\n")
         
         for task in tasks:
             await self.execute_task(task["name"], task["description"])
         
-        print("\n✅ كل المهام اكتملت!\n")
+        print("\n" + "="*60)
+        print("✅ كل المهام اكتملت!")
+        print("="*60 + "\n")
+        
         return self.tasks_completed
 
+# تشغيل
 if __name__ == "__main__":
     import asyncio
+    
     orchestrator = DigitalCastleOrchestrator()
     results = asyncio.run(orchestrator.build_project())
     
+    # حفظ النتائج
     with open("build_results.json", "w", encoding="utf-8") as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
     
-    print("📁 النتائج في: build_results.json")
+    print("📁 النتائج محفوظة في: build_results.json")
