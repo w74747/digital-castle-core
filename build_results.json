@@ -1,0 +1,118 @@
+[
+  {
+    "task": "Telegram Bot Orchestrator",
+    "timestamp": "2026-08-15T20:32:33.190175",
+    "plan": {
+      "type": "error",
+      "error": {
+        "type": "authentication_error",
+        "message": "invalid x-api-key"
+      },
+      "request_id": "req_011Ce5ArRR1uJ2nqxuZ7xeiR"
+    },
+    "code": {
+      "error": {
+        "message": "Authentication Fails, Your api key: ****-key is invalid",
+        "type": "authentication_error",
+        "param": null,
+        "code": "invalid_request_error"
+      }
+    },
+    "review": {
+      "id": "owLh4no-2kFHot-a2baf81b68c9d85a",
+      "error": {
+        "message": "Invalid API key provided. You can find your API key at https://api.together.ai/settings/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+      }
+    }
+  },
+  {
+    "task": "Agent Router",
+    "timestamp": "2026-08-15T20:32:34.297163",
+    "plan": {
+      "type": "error",
+      "error": {
+        "type": "authentication_error",
+        "message": "invalid x-api-key"
+      },
+      "request_id": "req_011Ce5ArXEWgAXnzdjcMtd8N"
+    },
+    "code": {
+      "error": {
+        "message": "Authentication Fails, Your api key: ****-key is invalid",
+        "type": "authentication_error",
+        "param": null,
+        "code": "invalid_request_error"
+      }
+    },
+    "review": {
+      "id": "owLh57u-2kFHot-a2baf823eb868934",
+      "error": {
+        "message": "Invalid API key provided. You can find your API key at https://api.together.ai/settings/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+      }
+    }
+  },
+  {
+    "task": "Document Engine",
+    "timestamp": "2026-08-15T20:32:35.337411",
+    "plan": {
+      "type": "error",
+      "error": {
+        "type": "authentication_error",
+        "message": "invalid x-api-key"
+      },
+      "request_id": "req_011Ce5ArbXyYhYAXcUNW1id9"
+    },
+    "code": {
+      "error": {
+        "message": "Authentication Fails, Your api key: ****-key is invalid",
+        "type": "authentication_error",
+        "param": null,
+        "code": "invalid_request_error"
+      }
+    },
+    "review": {
+      "id": "owLh5Ro-2kFHot-a2baf82a6f378a21",
+      "error": {
+        "message": "Invalid API key provided. You can find your API key at https://api.together.ai/settings/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+      }
+    }
+  },
+  {
+    "task": "Security Module",
+    "timestamp": "2026-08-15T20:32:36.398928",
+    "plan": {
+      "type": "error",
+      "error": {
+        "type": "authentication_error",
+        "message": "invalid x-api-key"
+      },
+      "request_id": "req_011Ce5Arg26VRJu7YTHzSD5F"
+    },
+    "code": {
+      "error": {
+        "message": "Authentication Fails, Your api key: ****-key is invalid",
+        "type": "authentication_error",
+        "param": null,
+        "code": "invalid_request_error"
+      }
+    },
+    "review": {
+      "id": "owLh5k9-2kFHot-a2baf8310a66c739",
+      "error": {
+        "message": "Invalid API key provided. You can find your API key at https://api.together.ai/settings/api-keys.",
+        "type": "invalid_request_error",
+        "param": null,
+        "code": "invalid_api_key"
+      }
+    }
+  }
+]
