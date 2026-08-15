@@ -1,0 +1,122 @@
+version: '3.9'
+
+services:
+  # Main Application
+  digital-castle:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.main
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - TOGETHER_API_KEY=${TOGETHER_API_KEY}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DATABASE_URL=postgresql://user:pass@postgres:5432/digital_castle
+      - LOCALAI_URL=http://localai:8080
+      - QWEN_URL=http://qwen:8000
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+    depends_on:
+      - postgres
+      - localai
+      - qwen
+      - redis
+    volumes:
+      - ./logs:/var/log/digital-castle
+      - ./cache:/app/cache
+    networks:
+      - castle-network
+
+  # LocalAI: Offline LLM
+  localai:
+    image: localai/localai:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - MODELS_PATH=/models
+      - DEBUG=false
+      - THREADS=8
+    volumes:
+      - ./models/localai:/models
+      - ./cache/localai:/cache
+    networks:
+      - castle-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 16G
+
+  # Qwen 3.8: Cost-effective LLM
+  qwen:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.qwen
+    ports:
+      - "8001:8000"
+    environment:
+      - MODEL_NAME=qwen-3.8-27b
+      - QUANTIZATION=gguf
+    volumes:
+      - ./models/qwen:/models
+      - ./cache/qwen:/cache
+    networks:
+      - castle-network
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 12G
+
+  # PostgreSQL: Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: digital_castle
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - castle-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis: Cache & Memory
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - castle-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Monitoring (Optional)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - castle-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+
+networks:
+  castle-network:
+    driver: bridge
