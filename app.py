@@ -13,7 +13,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"message": "🏰 Digital Castle Online - AI Agents Building"}
+    return {"message": "🏰 Digital Castle - AI Agents Online"}
 
 @app.get("/health")
 def health():
@@ -21,4 +21,4 @@ def health():
 
 @app.get("/api/status")
 def status():
-    return {"status": "online", "agents": 22, "version": "3.0"}
+    return {"status": "online", "agents": 22}
