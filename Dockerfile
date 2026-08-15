@@ -1,71 +1,42 @@
-# Multi-stage Dockerfile for Digital Castle S.P.C
-# Stage 1: Builder
-FROM python:3.10-slim AS builder
-
-WORKDIR /build
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements
-COPY requirements.txt .
-
-# Create virtual environment and install dependencies
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Download Playwright browsers (needed for PDF generation)
-RUN playwright install chromium
-
-# Stage 2: Runtime
+# docker/Dockerfile.qwen
 FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install runtime dependencies only
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y \
+    build-essential \
     curl \
-    postgresql-client \
-    libpq5 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create app user (non-root)
-RUN useradd -m -u 1000 appuser
+RUN pip install --no-cache-dir \
+    torch torchvision torchaudio \
+    transformers \
+    peft \
+    bitsandbytes \
+    uvicorn \
+    fastapi \
+    httpx
 
-# Copy virtual environment from builder
-COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+RUN mkdir -p /models
 
-# Copy Playwright browsers from builder
-COPY --from=builder --chown=appuser:appuser /home/root/.cache /home/appuser/.cache
+COPY docker/qwen_server.py .
 
-# Copy application code
-COPY --chown=appuser:appuser . .
+RUN python -c "
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
 
-# Set environment variables
-ENV PATH="/opt/venv/bin:$PATH"
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PLAYWRIGHT_BROWSERS_PATH=/home/appuser/.cache/ms-playwright
+model_name = 'Qwen/Qwen2.5-3B-Instruct'
+cache_dir = '/models'
 
-# Create log directory
-RUN mkdir -p /var/log/digital-castle && \
-    chown -R appuser:appuser /var/log/digital-castle
+print('Downloading Qwen model...')
+tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
+model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir)
+print('Model downloaded successfully')
+"
 
-# Switch to non-root user
-USER appuser
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# Expose port
 EXPOSE 8000
 
-# Default command
-CMD ["python", "bot_orchestrator.py"]
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+CMD ["python", "qwen_server.py"]
