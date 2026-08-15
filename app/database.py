@@ -2,9 +2,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import os
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://dc_user:dc_password@localhost:5432/digital_castle")
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(bind=engine)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
+engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def get_db():
     db = SessionLocal()
@@ -12,3 +12,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
+def init_db():
+    from app.models import Base
+    Base.metadata.create_all(bind=engine)
