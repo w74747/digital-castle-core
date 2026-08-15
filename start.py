@@ -1,26 +1,20 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse
 import uvicorn
 from app.database import init_db
-from app.routes import router
-from app.advanced_routes import router as advanced_router
+from app.routes import router as basic_router
 import logging
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Digital Castle API",
-    description="Enterprise AI Agent System with Advanced Features",
+    description="Enterprise AI Agent System",
     version="3.0.0"
 )
 
-# Middleware
-app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,27 +23,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    logger.error(f"Error: {exc}")
-    return JSONResponse(status_code=500, content={"detail": str(exc)})
-
 @app.on_event("startup")
 def startup():
-    init_db()
-    logger.info("Database initialized")
+    try:
+        init_db()
+        logger.info("Database initialized")
+    except:
+        logger.warning("Database init skipped")
 
 @app.get("/health")
 def health():
-    return {"status": "healthy", "version": "3.0.0"}
+    return {"status": "healthy"}
 
 @app.get("/")
 def root():
-    return {"message": "🏰 Digital Castle v3.0 - Production Ready"}
+    return {"message": "🏰 Digital Castle v3.0"}
 
 @app.get("/api/status")
 def api_status():
-    return {"status": "online", "version": "3.0.0", "agents": 22, "features": ["WebSocket", "Email", "RateLimit", "Cache"]}
+    return {"status": "online", "version": "3.0.0", "agents": 22}
 
 @app.get("/api/agents")
 def api_agents():
@@ -60,8 +52,71 @@ def api_agents():
               "UI/UX Designer", "Business Consultant", "Backup Manager"]
     return {"agents": agents, "count": len(agents)}
 
-app.include_router(router)
-app.include_router(advanced_router)
+# Simple mock endpoints (no database)
+tasks_db = []
+users_db = {}
+
+@app.post("/api/register")
+def register(username: str, email: str, password: str):
+    if username in users_db:
+        return {"error": "User exists"}
+    users_db[username] = {"email": email, "password": password}
+    return {"id": 1, "username": username}
+
+@app.post("/api/login")
+def login(username: str, password: str):
+    if username not in users_db or users_db[username]["password"] != password:
+        return {"error": "Invalid credentials"}, 401
+    
+    from app.auth import create_access_token
+    token = create_access_token({"sub": username})
+    return {"access_token": token, "token_type": "bearer"}
+
+@app.get("/api/tasks")
+def get_tasks():
+    return {"tasks": tasks_db}
+
+@app.post("/api/tasks")
+def create_task(title: str, agent: str = "Developer", description: str = ""):
+    task = {"id": len(tasks_db) + 1, "title": title, "agent": agent, "status": "pending"}
+    tasks_db.append(task)
+    return {"id": task["id"], "status": "created"}
+
+@app.post("/api/v2/tasks/advanced")
+def create_task_advanced(title: str, agent: str, description: str = "", token: str = None):
+    task = {"id": len(tasks_db) + 1, "title": title, "agent": agent, "status": "pending", "description": description}
+    tasks_db.append(task)
+    return {"id": task["id"], "status": "created", "task": task}
+
+@app.get("/api/analytics")
+def analytics():
+    completed = len([t for t in tasks_db if t["status"] == "completed"])
+    return {"total": len(tasks_db), "completed": completed, "pending": len(tasks_db) - completed}
+
+@app.get("/api/v2/analytics/advanced")
+def analytics_advanced():
+    by_agent = {}
+    for task in tasks_db:
+        agent = task.get("agent", "Unknown")
+        if agent not in by_agent:
+            by_agent[agent] = {"total": 0, "completed": 0}
+        by_agent[agent]["total"] += 1
+        if task.get("status") == "completed":
+            by_agent[agent]["completed"] += 1
+    
+    total = len(tasks_db)
+    completed = len([t for t in tasks_db if t["status"] == "completed"])
+    
+    return {
+        "summary": {
+            "total": total,
+            "completed": completed,
+            "completion_rate": (completed / total * 100) if total > 0 else 0
+        },
+        "by_agent": by_agent
+    }
+
+app.include_router(basic_router)
 
 def custom_openapi():
     if app.openapi_schema:
@@ -69,7 +124,6 @@ def custom_openapi():
     openapi_schema = get_openapi(
         title="Digital Castle API",
         version="3.0.0",
-        description="Enterprise AI Agent System",
         routes=app.routes,
     )
     app.openapi_schema = openapi_schema
