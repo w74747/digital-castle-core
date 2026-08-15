@@ -1,4 +1,4 @@
-# docker-compose.yml
+# docker-compose.yml (معدّل)
 version: '3.9'
 
 services:
@@ -24,10 +24,10 @@ services:
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
       - LOG_LEVEL=INFO
     depends_on:
-      - postgres
-      - redis
-      - localai
-      - qwen
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./logs:/var/log/digital-castle
       - ./data:/app/data
@@ -41,20 +41,24 @@ services:
       retries: 3
 
   localai:
-    image: localai/localai:latest-cuda
+    image: localai/localai:latest
     ports:
       - "8080:8080"
     environment:
       - MODELS_PATH=/models
       - DEBUG=false
-      - THREADS=8
-      - CUDA_VISIBLE_DEVICES=0
+      - THREADS=4
     volumes:
       - ./models/localai:/models
       - ./cache/localai:/cache
     networks:
       - castle
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
 
   qwen:
     build:
@@ -65,13 +69,18 @@ services:
     environment:
       - MODEL_NAME=qwen-3.8-27b
       - QUANTIZATION=gguf
-      - THREADS=8
+      - THREADS=4
     volumes:
       - ./models/qwen:/models
       - ./cache/qwen:/cache
     networks:
       - castle
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
 
   postgres:
     image: postgres:15-alpine
