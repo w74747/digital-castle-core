@@ -2,7 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import uvicorn
+import sys
 
+# القراءة من environment
+PORT = int(os.getenv("PORT", "8000"))
+HOST = "0.0.0.0"
+
+# إنشاء التطبيق
 app = FastAPI(title="Digital Castle", version="3.0")
 
 app.add_middleware(
@@ -13,25 +19,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Mock data
+# بيانات مؤقتة
 tasks = []
-users = {}
-
-@app.get("/health")
-def health():
-    return {"status": "healthy"}
 
 @app.get("/")
 def root():
-    return {"message": "🏰 Digital Castle v3.0 Online"}
+    return {"message": "🏰 Digital Castle Online", "port": PORT}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.get("/api/status")
 def status():
-    return {"status": "online", "version": "3.0.0", "agents": 22}
+    return {"status": "online", "version": "3.0", "agents": 22}
 
 @app.get("/api/agents")
 def agents():
-    return {"agents": ["Developer", "DevSecOps", "QA"], "count": 22}
+    return {"agents": ["Dev", "DevOps", "QA"], "count": 22}
 
 @app.get("/api/tasks")
 def get_tasks():
@@ -39,10 +44,15 @@ def get_tasks():
 
 @app.post("/api/tasks")
 def create_task(title: str):
-    task = {"id": len(tasks)+1, "title": title}
+    task = {"id": 1, "title": title}
     tasks.append(task)
     return task
 
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    print(f"Starting on {HOST}:{PORT}")
+    uvicorn.run(
+        app,
+        host=HOST,
+        port=PORT,
+        log_level="info"
+    )
