@@ -1,42 +1,33 @@
-# docker/Dockerfile.qwen
+# Dockerfile (معدّل)
 FROM python:3.10-slim
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
+    gcc \
+    libpq-dev \
+    postgresql-client \
+    libpq5 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
-    torch torchvision torchaudio \
-    transformers \
-    peft \
-    bitsandbytes \
-    uvicorn \
-    fastapi \
-    httpx
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-RUN mkdir -p /models
+COPY requirements.txt .
 
-COPY docker/qwen_server.py .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN python -c "
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import os
+COPY . .
 
-model_name = 'Qwen/Qwen2.5-3B-Instruct'
-cache_dir = '/models'
+RUN mkdir -p /var/log/digital-castle && \
+    mkdir -p data/memory
 
-print('Downloading Qwen model...')
-tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir)
-model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=cache_dir)
-print('Model downloaded successfully')
-"
+USER nobody
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["python", "qwen_server.py"]
+CMD ["python", "bot_orchestrator.py"]
