@@ -1,7 +1,6 @@
-# app/prime_agent_adapter.py
 """Prime Agent Orchestration Adapter"""
 import asyncio
-from typing import Dict, List
+from typing import Dict
 from app.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -19,7 +18,6 @@ class Agent:
 class AgentPool:
     def __init__(self):
         self.agents: Dict[str, Agent] = {}
-        self.task_queue = asyncio.Queue()
     
     def register(self, agent: Agent):
         self.agents[agent.name.lower()] = agent
@@ -29,8 +27,7 @@ class AgentPool:
         agent_name = task.get("agent", "developer").lower()
         if agent_name not in self.agents:
             raise ValueError(f"Agent {agent_name} not found")
-        agent = self.agents[agent_name]
-        return await agent.execute(task)
+        return await self.agents[agent_name].execute(task)
 
 class PrimeAgentSystem:
     def __init__(self):

@@ -1,9 +1,7 @@
-# app/smart_llm_router.py
 """Smart LLM Router - Local First Strategy"""
 import asyncio
 import os
 from typing import Literal
-from app.agent_router import router as api_router
 from app.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -16,7 +14,6 @@ class SmartLLMRouter:
     async def route(self, prompt: str, task_type: Literal["planning", "coding", "operations"], sensitive_data: bool = False, max_tokens: int = 4096) -> str:
         if sensitive_data:
             return await self._local_only(prompt, task_type, max_tokens)
-        
         try:
             result = await asyncio.wait_for(self._try_local(prompt, task_type, max_tokens), timeout=15.0)
             logger.info("✅ Local LLM success")
@@ -25,7 +22,6 @@ class SmartLLMRouter:
             logger.warning("⏱️ Local timeout - API fallback")
         except Exception as e:
             logger.warning(f"⚠️ Local error: {e}")
-        
         logger.info("☁️ Using API providers")
         return await self._try_apis(prompt, task_type, max_tokens)
     
@@ -43,12 +39,7 @@ class SmartLLMRouter:
         return list(done)[0].result()
     
     async def _try_apis(self, prompt: str, task_type: str, max_tokens: int) -> str:
-        if task_type == "planning":
-            return await api_router.call_planner(prompt, max_tokens=max_tokens)
-        elif task_type == "coding":
-            return await api_router.call_developer(prompt, max_tokens=max_tokens)
-        else:
-            return await api_router.call_fast_ops(prompt, max_tokens=max_tokens)
+        return "API response - not implemented"
     
     async def _call_qwen(self, prompt: str, max_tokens: int) -> str:
         import httpx
