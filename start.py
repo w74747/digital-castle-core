@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+ْfrom fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 import uvicorn
@@ -116,3 +116,5 @@ app.openapi = custom_openapi
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8001))
     uvicorn.run(app, host="0.0.0.0", port=port)
+x
+
