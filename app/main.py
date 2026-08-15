@@ -11,3 +11,6 @@ async def health():
 @app.get("/")
 async def root():
     return {"message": "🏰 Digital Castle S.P.C - Running"}
+
+from app.api import router
+app.include_router(router)
