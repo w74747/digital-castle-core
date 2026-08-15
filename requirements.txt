@@ -1,9 +1,84 @@
-python-telegram-bot[job-queue]==21.10
+# Digital Castle S.P.C - Python Dependencies
+# Version: 1.0.0
+# Platform: Python 3.10+
+
+# Telegram Bot Framework
+python-telegram-bot==21.10
+
+# HTTP Client (Async)
 httpx==0.28.1
+
+# GitHub Integration
 PyGithub==2.6.0
+
+# Environment Variables
 python-dotenv==1.0.1
+
+# Data Validation
 pydantic==2.10.6
+pydantic-settings==2.4.0
+
+# Image Processing (Watermarking, QR codes)
 Pillow==10.4.0
 qrcode==7.4.2
-jinja2==3.1.4
+
+# Template Rendering
+Jinja2==3.1.4
+
+# PDF Generation (HTML to PDF)
 playwright==1.49.1
+
+# Database (PostgreSQL)
+sqlalchemy==2.0.27
+psycopg2-binary==2.9.10
+
+# Database Migrations
+alembic==1.13.2
+
+# Async Support
+asyncio-contextmanager==1.0.0
+
+# Cryptography
+cryptography==42.0.8
+
+# UUID and other utilities
+python-multipart==0.0.7
+
+# Logging and Monitoring
+python-json-logger==2.0.8
+
+# Testing
+pytest==8.2.2
+pytest-asyncio==0.23.5
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+
+# Security Testing
+bandit==1.7.8
+safety==3.2.7
+
+# Code Quality
+black==24.2.0
+isort==5.13.2
+flake8==7.1.1
+pylint==3.2.6
+
+# Type Checking
+mypy==1.11.2
+types-requests==2.31.0.10
+
+# Documentation
+sphinx==7.3.7
+sphinx-rtd-theme==2.0.0
+
+# Development
+ipython==8.23.0
+ipdb==0.13.13
+watchdog==4.0.2
+
+# Performance Monitoring
+prometheus-client==0.21.0
+
+# Environment
+setuptools==68.0.0
+wheel==0.43.0
