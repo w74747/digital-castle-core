@@ -2,18 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 import uvicorn
+import os
 from app.database import init_db
 from app.routes import router as basic_router
-import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-app = FastAPI(
-    title="Digital Castle API",
-    description="Enterprise AI Agent System",
-    version="3.0.0"
-)
+app = FastAPI(title="Digital Castle API", version="3.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -27,9 +20,8 @@ app.add_middleware(
 def startup():
     try:
         init_db()
-        logger.info("Database initialized")
     except:
-        logger.warning("Database init skipped")
+        pass
 
 @app.get("/health")
 def health():
@@ -45,29 +37,28 @@ def api_status():
 
 @app.get("/api/agents")
 def api_agents():
-    agents = ["Market Scout", "Developer", "DevSecOps", "QA Engineer", "Tech Writer", 
+    agents = ["Market Scout", "Developer", "DevSecOps", "QA Engineer", "Tech Writer",
               "Database Admin", "SEO Specialist", "CMO", "Content Writer", "Media Producer",
               "Social Manager", "Brand Guardian", "CFO", "API Sentinel", "Cost Auditor",
               "Investment Advisor", "Performance Coach", "Project Manager", "Architect",
               "UI/UX Designer", "Business Consultant", "Backup Manager"]
     return {"agents": agents, "count": len(agents)}
 
-# Simple mock endpoints (no database)
+# Mock data
 tasks_db = []
 users_db = {}
 
 @app.post("/api/register")
 def register(username: str, email: str, password: str):
     if username in users_db:
-        return {"error": "User exists"}
+        return {"error": "User exists"}, 400
     users_db[username] = {"email": email, "password": password}
     return {"id": 1, "username": username}
 
 @app.post("/api/login")
 def login(username: str, password: str):
     if username not in users_db or users_db[username]["password"] != password:
-        return {"error": "Invalid credentials"}, 401
-    
+        return {"error": "Invalid"}, 401
     from app.auth import create_access_token
     token = create_access_token({"sub": username})
     return {"access_token": token, "token_type": "bearer"}
@@ -77,21 +68,21 @@ def get_tasks():
     return {"tasks": tasks_db}
 
 @app.post("/api/tasks")
-def create_task(title: str, agent: str = "Developer", description: str = ""):
+def create_task(title: str, agent: str = "Developer"):
     task = {"id": len(tasks_db) + 1, "title": title, "agent": agent, "status": "pending"}
     tasks_db.append(task)
-    return {"id": task["id"], "status": "created"}
+    return {"id": task["id"]}
 
 @app.post("/api/v2/tasks/advanced")
-def create_task_advanced(title: str, agent: str, description: str = "", token: str = None):
+def create_task_advanced(title: str, agent: str, description: str = ""):
     task = {"id": len(tasks_db) + 1, "title": title, "agent": agent, "status": "pending", "description": description}
     tasks_db.append(task)
-    return {"id": task["id"], "status": "created", "task": task}
+    return {"id": task["id"], "status": "created"}
 
 @app.get("/api/analytics")
 def analytics():
     completed = len([t for t in tasks_db if t["status"] == "completed"])
-    return {"total": len(tasks_db), "completed": completed, "pending": len(tasks_db) - completed}
+    return {"total": len(tasks_db), "completed": completed}
 
 @app.get("/api/v2/analytics/advanced")
 def analytics_advanced():
@@ -106,13 +97,8 @@ def analytics_advanced():
     
     total = len(tasks_db)
     completed = len([t for t in tasks_db if t["status"] == "completed"])
-    
     return {
-        "summary": {
-            "total": total,
-            "completed": completed,
-            "completion_rate": (completed / total * 100) if total > 0 else 0
-        },
+        "summary": {"total": total, "completed": completed},
         "by_agent": by_agent
     }
 
@@ -121,15 +107,12 @@ app.include_router(basic_router)
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
-    openapi_schema = get_openapi(
-        title="Digital Castle API",
-        version="3.0.0",
-        routes=app.routes,
-    )
+    openapi_schema = get_openapi(title="Digital Castle API", version="3.0.0", routes=app.routes)
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
 app.openapi = custom_openapi
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8001, reload=False)
+    port = int(os.getenv("PORT", 8001))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -1,1 +1,1 @@
-web: python bot_orchestrator.py
+web: python start.py
