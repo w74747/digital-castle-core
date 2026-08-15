@@ -1,4 +1,4 @@
-# requirements_prod.txt (جديد - بدون torch/transformers)
+# requirements.txt (معدّل)
 python-telegram-bot==21.10
 httpx==0.28.1
 PyGithub==2.6.0
@@ -14,7 +14,7 @@ psycopg2-binary==2.9.10
 alembic==1.13.2
 cryptography==42.0.8
 python-multipart==0.0.7
-python-json-logger==2.0.8
+python-json-logger==4.0.0
 redis==5.0.1
 fastapi==0.109.1
 uvicorn==0.27.0
@@ -23,3 +23,8 @@ pytest-asyncio==0.23.5
 black==24.2.0
 isort==5.13.2
 flake8==7.1.1
+mypy==1.11.2
+types-requests==2.31.0.10
+ipython==8.23.0
+bandit==1.7.8
+safety==3.2.7
