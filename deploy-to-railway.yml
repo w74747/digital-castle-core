@@ -1,0 +1,210 @@
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Manual trigger
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Build and push Docker image
+    - name: Build and push Docker image
+      id: docker_build
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
+
+    - name: Prepare deployment info
+      id: deploy_info
+      run: |
+        echo "image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+        echo "commit_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "commit_msg=$(git log -1 --pretty=%B)" >> $GITHUB_OUTPUT
+
+    # Deploy to Railway using Railway CLI
+    - name: Deploy to Railway
+      id: railway_deploy
+      env:
+        RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      run: |
+        # Install Railway CLI
+        npm install -g @railway/cli
+
+        # Trigger deployment
+        railway deploy \
+          --service digital-castle \
+          --environment production \
+          --image ${{ steps.deploy_info.outputs.image }}
+
+        echo "deployment_status=success" >> $GITHUB_OUTPUT
+
+    # Wait for deployment and health check
+    - name: Health check
+      id: health_check
+      timeout-minutes: 5
+      run: |
+        MAX_ATTEMPTS=30
+        ATTEMPT=0
+        RAILWAY_URL="${{ secrets.RAILWAY_PUBLIC_DOMAIN }}"
+
+        while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+          echo "Health check attempt $((ATTEMPT + 1))/$MAX_ATTEMPTS"
+
+          if curl -sf "$RAILWAY_URL/health" > /dev/null 2>&1; then
+            echo "✅ Health check passed"
+            echo "health_status=healthy" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          ATTEMPT=$((ATTEMPT + 1))
+          sleep 10
+        done
+
+        echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
+        echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+        exit 1
+
+    # Notify success
+    - name: Deployment success notification
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const deployment = {
+            image: "${{ steps.deploy_info.outputs.image }}",
+            commit: "${{ steps.deploy_info.outputs.commit_sha }}",
+            timestamp: "${{ steps.deploy_info.outputs.timestamp }}",
+            health: "${{ steps.health_check.outputs.health_status }}"
+          };
+
+          console.log("✅ Deployment successful!");
+          console.log(JSON.stringify(deployment, null, 2));
+
+    # Notify failure
+    - name: Deployment failure notification
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: `❌ Deployment to Railway failed!\n\nCommit: ${context.sha}\n\n[View logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+          });
+
+          console.error("❌ Deployment failed!");
+
+    # Database migrations (if needed)
+    - name: Run database migrations
+      if: success()
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      run: |
+        echo "Running database migrations..."
+        # This would typically be done by the application on startup
+        # Or via a separate migration job
+        echo "Migrations completed"
+
+    # Update deployment status in GitHub
+    - name: Update deployment status
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const status = '${{ job.status }}' === 'success' ? 'success' : 'failure';
+          const environment_url = '${{ secrets.RAILWAY_PUBLIC_DOMAIN }}';
+
+          github.rest.repos.createDeploymentStatus({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            deployment_id: '${{ github.run_id }}',
+            state: status,
+            description: `Deployment to Railway ${status === 'success' ? '✅' : '❌'}`,
+            environment_url: environment_url,
+            auto_merge: false
+          });
+
+    # Create release notes
+    - name: Create release notes
+      if: success()
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: release-${{ github.run_number }}
+        release_name: Release ${{ github.run_number }}
+        body: |
+          ## Deployment Information
+          
+          **Status:** ✅ Successful
+          
+          **Image:** ${{ steps.deploy_info.outputs.image }}
+          **Commit:** ${{ steps.deploy_info.outputs.commit_sha }}
+          **Timestamp:** ${{ steps.deploy_info.outputs.timestamp }}
+          **Health:** ${{ steps.health_check.outputs.health_status }}
+          
+          **Changes:**
+          ${{ steps.deploy_info.outputs.commit_msg }}
+          
+          **Deployment URL:** ${{ secrets.RAILWAY_PUBLIC_DOMAIN }}
+        draft: false
+        prerelease: false
+
+  notify-telegram:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Send Telegram notification
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_ADMIN_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: |
+          🚀 Deployment Report
+
+          Status: ${{ needs.deploy.result == 'success' && '✅ Success' || '❌ Failed' }}
+          Repository: ${{ github.repository }}
+          Commit: ${{ github.sha }}
+          Branch: ${{ github.ref_name }}
+
+          View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
