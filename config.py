@@ -19,8 +19,8 @@ GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
 DATABASE_URL = os.getenv('DATABASE_URL', 'sqlite:///digital_castle.db')
 
 # ================ SERVER CONFIG ================
-PORT = int(os.getenv('PORT', '8000'))
-WEBHOOK_URL = os.getenv('WEBHOOK_URL', 'http://localhost:8000')
+PORT = int(os.getenv('PORT', '8080'))
+WEBHOOK_URL = os.getenv('WEBHOOK_URL', 'http://localhost:8080')
 
 # ================ MODEL ASSIGNMENTS (HYBRID ROUTING) ================
 MODELS = {
