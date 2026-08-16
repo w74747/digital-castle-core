@@ -1,0 +1,91 @@
+{
+  "company": {
+    "name": "Digital Castle S.P.C",
+    "name_ar": "شركة القلعة الرقمية ش.ش.و",
+    "legal_form": "S.P.C (Sole Proprietorship Company)",
+    "jurisdiction": "Sultanate of Oman",
+    "registry_number": "DC-2024-SPCv1",
+    "registration_date": "2024-01-01"
+  },
+  "color_palette": {
+    "primary": {
+      "name": "Graphite Black",
+      "hex": "#1A1A1A",
+      "rgb": "26, 26, 26",
+      "usage": "Headers, primary text, structural elements"
+    },
+    "secondary": {
+      "name": "Corporate Blue",
+      "hex": "#0F5F9D",
+      "rgb": "15, 95, 157",
+      "usage": "Accents, links, emphasis"
+    },
+    "accent": {
+      "name": "Gold Refined",
+      "hex": "#D4AF37",
+      "rgb": "212, 175, 55",
+      "usage": "Borders, badges, premium touches"
+    },
+    "neutral": {
+      "light_gray": "#F5F5F5",
+      "medium_gray": "#E0E0E0",
+      "dark_gray": "#7A7A7A"
+    },
+    "status": {
+      "success": "#2E7D32",
+      "warning": "#F57F17",
+      "error": "#C62828"
+    }
+  },
+  "typography": {
+    "primary_font": "Inter",
+    "secondary_font": "Cairo",
+    "fallback": "sans-serif",
+    "sizes": {
+      "h1": "32px",
+      "h2": "28px",
+      "h3": "24px",
+      "body": "14px",
+      "small": "12px"
+    },
+    "weights": {
+      "light": 300,
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "spacing": {
+    "unit": "8px",
+    "xs": "4px",
+    "sm": "8px",
+    "md": "16px",
+    "lg": "24px",
+    "xl": "32px"
+  },
+  "document_standards": {
+    "page_size": "A4",
+    "margin_top": "20mm",
+    "margin_right": "15mm",
+    "margin_bottom": "20mm",
+    "margin_left": "15mm",
+    "line_height": "1.6",
+    "default_language": "ar"
+  },
+  "logo": {
+    "path": "assets/logo.svg",
+    "width_mm": "40",
+    "format": "SVG"
+  },
+  "signature": {
+    "path": "assets/signature.png",
+    "width_mm": "30",
+    "format": "PNG"
+  },
+  "stamp": {
+    "path": "assets/stamp.png",
+    "width_mm": "35",
+    "format": "PNG"
+  }
+}
