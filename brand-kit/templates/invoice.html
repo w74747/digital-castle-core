@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - {{ invoice.invoice_number }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: A4;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
+        @font-face {
+            font-family: 'Cairo';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            src: url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        }
+
+        body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+            color: #1A1A1A;
+            line-height: 1.6;
+            background: white;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .header {
+            border-bottom: 3px solid #0F5F9D;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-info h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1A1A1A;
+            margin-bottom: 5px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .company-info .subtitle {
+            font-size: 12px;
+            color: #7A7A7A;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .logo-section {
+            text-align: left;
+        }
+
+        .logo-section img {
+            height: 60px;
+            width: auto;
+        }
+
+        .invoice-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+            background: #F5F5F5;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .invoice-details h3,
+        .client-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0F5F9D;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #1A1A1A;
+            flex: 0 0 40%;
+        }
+
+        .detail-value {
+            color: #7A7A7A;
+            text-align: left;
+        }
+
+        .items-table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+
+        .items-table thead {
+            background: #0F5F9D;
+            color: white;
+        }
+
+        .items-table th {
+            padding: 12px;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: 1px solid #0F5F9D;
+        }
+
+        .items-table td {
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            font-size: 13px;
+        }
+
+        .items-table tbody tr:nth-child(even) {
+            background: #F5F5F5;
+        }
+
+        .items-table .quantity,
+        .items-table .unit-price,
+        .items-table .amount {
+            text-align: left;
+        }
+
+        .summary-section {
+            display: flex;
+            justify-content: flex-start;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .summary-box {
+            flex: 0 0 200px;
+            background: #F5F5F5;
+            padding: 16px;
+            border-radius: 8px;
+            border-right: 4px solid #D4AF37;
+        }
+
+        .summary-box h4 {
+            font-size: 11px;
+            color: #7A7A7A;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .summary-box .amount {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1A1A1A;
+        }
+
+        .total-box {
+            border-right: 4px solid #0F5F9D;
+        }
+
+        .total-box .amount {
+            color: #0F5F9D;
+        }
+
+        .footer-section {
+            border-top: 2px solid #D4AF37;
+            padding-top: 20px;
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: flex-end;
+        }
+
+        .signature-area {
+            text-align: left;
+        }
+
+        .signature-area img {
+            height: 40px;
+            width: auto;
+            margin-bottom: 10px;
+        }
+
+        .signature-line {
+            border-top: 2px solid #1A1A1A;
+            width: 120px;
+            margin-top: 10px;
+            padding-top: 8px;
+            font-size: 11px;
+            color: #7A7A7A;
+        }
+
+        .stamp-area {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .stamp-area img {
+            height: 80px;
+            width: auto;
+            opacity: 0.9;
+        }
+
+        .stamp-text {
+            font-size: 10px;
+            color: #7A7A7A;
+            font-style: italic;
+        }
+
+        .notes-section {
+            background: #F5F5F5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 11px;
+            line-height: 1.8;
+            color: #7A7A7A;
+        }
+
+        .notes-section strong {
+            color: #1A1A1A;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 80px;
+            opacity: 0.05;
+            color: #0F5F9D;
+            font-weight: 700;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">Digital Castle</div>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="company-info">
+            <h1>{{ company.name }}</h1>
+            <p class="subtitle">{{ company.name_ar }}</p>
+            <p class="subtitle">{{ company.legal_form }} | Oman</p>
+        </div>
+        <div class="logo-section">
+            <img src="{{ logo_path }}" alt="Digital Castle Logo">
+        </div>
+    </div>
+
+    <!-- Invoice & Client Details -->
+    <div class="invoice-header">
+        <div class="invoice-details">
+            <h3>Invoice Details</h3>
+            <div class="detail-row">
+                <span class="detail-label">Invoice #:</span>
+                <span class="detail-value">{{ invoice.invoice_number }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Date:</span>
+                <span class="detail-value">{{ invoice.date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Due Date:</span>
+                <span class="detail-value">{{ invoice.due_date }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Currency:</span>
+                <span class="detail-value">{{ invoice.currency }}</span>
+            </div>
+        </div>
+        <div class="client-details">
+            <h3>Bill To</h3>
+            <div class="detail-row">
+                <span class="detail-label">Client:</span>
+                <span class="detail-value">{{ invoice.client_name }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Email:</span>
+                <span class="detail-value">{{ invoice.client_email }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Phone:</span>
+                <span class="detail-value">{{ invoice.client_phone }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Address:</span>
+                <span class="detail-value">{{ invoice.client_address }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 40%;">Description</th>
+                <th style="width: 15%;">Quantity</th>
+                <th style="width: 20%;">Unit Price</th>
+                <th style="width: 25%;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items %}
+            <tr>
+                <td>{{ item.description }}</td>
+                <td class="quantity">{{ item.quantity }}</td>
+                <td class="unit-price">{{ item.unit_price | format_currency }}</td>
+                <td class="amount">{{ item.amount | format_currency }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Summary -->
+    <div class="summary-section">
+        <div class="summary-box">
+            <h4>Subtotal</h4>
+            <div class="amount">{{ invoice.subtotal | format_currency }}</div>
+        </div>
+        {% if invoice.tax > 0 %}
+        <div class="summary-box">
+            <h4>Tax ({{ invoice.tax_rate }}%)</h4>
+            <div class="amount">{{ invoice.tax | format_currency }}</div>
+        </div>
+        {% endif %}
+        {% if invoice.discount > 0 %}
+        <div class="summary-box">
+            <h4>Discount</h4>
+            <div class="amount">-{{ invoice.discount | format_currency }}</div>
+        </div>
+        {% endif %}
+        <div class="summary-box total-box">
+            <h4>Total Amount Due</h4>
+            <div class="amount">{{ invoice.total | format_currency }}</div>
+        </div>
+    </div>
+
+    <!-- Notes -->
+    {% if invoice.notes %}
+    <div class="notes-section">
+        <strong>Notes:</strong><br>
+        {{ invoice.notes }}
+    </div>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer-section">
+        <div class="signature-area">
+            <img src="{{ signature_path }}" alt="Authorized Signature">
+            <div class="signature-line">Authorized Signature</div>
+        </div>
+        <div class="stamp-area">
+            <img src="{{ stamp_path }}" alt="Official Stamp">
+            <p class="stamp-text">Official Stamp & Seal</p>
+        </div>
+    </div>
+
+</body>
+</html>
