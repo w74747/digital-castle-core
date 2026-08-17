@@ -1,326 +1,195 @@
+#!/usr/bin/env python3
+"""
+app.py - FastAPI Application with Correct Paths
+Digital Castle S.P.C - Document Engine
+"""
+
 import os
 import logging
+from typing import Optional, List, Dict
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from io import BytesIO
-from datetime import datetime, timedelta
+import uvicorn
+from pathlib import Path
 
-# Import DocumentEngine
-from document_engine import DocumentEngine, InvoiceData, InvoiceItem, create_sample_invoice
-
-# ============================================
-# Configuration & Logging
-# ============================================
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ============================================
-# FastAPI App Initialization
-# ============================================
-
+# Initialize FastAPI app
 app = FastAPI(
-    title="Digital Castle S.P.C - Document Engine API",
-    description="منصة توليد المستندات الرسمية والفواتير | Official Document Generation Platform",
+    title="Digital Castle - Document Engine",
+    description="Invoice Generation API",
     version="1.0.0"
 )
 
-# CORS Configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Initialize Document Engine
-document_engine = DocumentEngine(base_path=".")
-
-# ============================================
-# Environment Variables
-# ============================================
-
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_ADMIN_ID = os.getenv("TELEGRAM_ADMIN_ID", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
-KIMI_API_KEY = os.getenv("KIMI_API_KEY", "")
-TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY", "")
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
-DATABASE_URL = os.getenv("DATABASE_URL", "")
-
-logger.info("✅ Environment variables loaded from Railway")
+# Initialize Document Engine with CORRECT PATHS
+try:
+    from app.document_engine import DocumentEngine
+    
+    # ✅ CORRECT PATHS
+    engine = DocumentEngine(
+        template_path="brand-kit/templates/invoice.html",
+        brand_guidelines_path="brand-kit/brand_guidelines.json",
+        assets_path="assets"
+    )
+    logger.info("✅ DocumentEngine initialized successfully")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize Document Engine: {e}")
+    engine = None
 
 # ============================================
 # Pydantic Models
 # ============================================
 
-class HealthCheck(BaseModel):
-    status: str
-    version: str
-    timestamp: str
-    components: dict
+class InvoiceItem(BaseModel):
+    """Invoice line item"""
+    description: str
+    quantity: float
+    unit_price: float
 
 
 class InvoiceRequest(BaseModel):
+    """Invoice generation request"""
     invoice_number: str
     client_name: str
     client_email: str
-    client_address: str
-    items: list  # List of {"description", "quantity", "unit_price"}
-    tax_rate: float = 5.0
-    days_until_due: int = 30
+    client_contact: str
+    items: List[InvoiceItem]
+    issue_date: Optional[str] = None
+    due_date: Optional[str] = None
 
 
 # ============================================
 # Routes
 # ============================================
 
-@app.on_event("startup")
-async def startup_event():
-    """استدعاء التطبيق"""
-    logger.info("🚀 Digital Castle S.P.C Document Engine starting...")
-    logger.info(f"📂 Base path: {os.getcwd()}")
-    logger.info(f"🔐 Telegram Bot Token: {'✅ Configured' if TELEGRAM_BOT_TOKEN else '❌ Not configured'}")
-    logger.info(f"🔐 API Keys: {sum([bool(x) for x in [ANTHROPIC_API_KEY, DEEPSEEK_API_KEY, TOGETHER_API_KEY]])}/3 configured")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """إيقاف التطبيق"""
-    logger.info("🛑 Digital Castle S.P.C Document Engine shutting down...")
-
-
 @app.get("/", tags=["Health"])
 async def root():
-    """Health check و معلومات التطبيق"""
-    return HealthCheck(
-        status="operational",
-        version="1.0.0",
-        timestamp=datetime.now().isoformat(),
-        components={
-            "document_engine": "✅ Initialized",
-            "jinja2_templates": "✅ Loaded",
-            "weasyprint": "✅ Ready",
-            "telegram_bot": "✅ Connected" if TELEGRAM_BOT_TOKEN else "⚠️ Not configured",
-            "github_integration": "✅ Ready" if GITHUB_TOKEN else "⚠️ Not configured",
-            "database": "✅ Connected" if DATABASE_URL else "⚠️ Not configured"
-        }
-    )
+    """Root endpoint"""
+    return {
+        "message": "Digital Castle - Document Engine API",
+        "version": "1.0.0",
+        "status": "running"
+    }
 
 
-@app.get("/api/v1/health", tags=["Health"])
+@app.get("/health", tags=["Health"])
 async def health_check():
-    """فحص صحة النظام"""
+    """Health check endpoint"""
+    logger.info("✅ Health check")
     return {
         "status": "healthy",
-        "service": "Digital Castle S.P.C Document Engine",
-        "timestamp": datetime.now().isoformat(),
-        "components": {
-            "document_engine": True,
-            "templates": True,
-            "assets": os.path.exists("assets"),
-            "brand_kit": os.path.exists("brand-kit")
-        }
+        "version": "1.0.0",
+        "message": "Digital Castle Document Engine is running",
+        "engine_status": "ready" if engine else "not initialized"
     }
 
 
-@app.get("/api/v1/invoice/sample", tags=["Invoice"])
-async def get_sample_invoice():
-    """
-    الحصول على فاتورة تجريبية بصيغة PDF
-    
-    Returns:
-        PDF file with sample invoice
-    """
-    try:
-        # إنشاء فاتورة تجريبية
-        sample_invoice = create_sample_invoice()
-        
-        # توليد PDF
-        pdf_io = document_engine.generate_invoice_pdf(sample_invoice)
-        
-        return FileResponse(
-            iter([pdf_io.getvalue()]),
-            media_type="application/pdf",
-            filename="Digital_Castle_Sample_Invoice.pdf",
-            headers={"Content-Disposition": "attachment; filename='Digital_Castle_Sample_Invoice.pdf'"}
-        )
-    
-    except Exception as e:
-        logger.error(f"❌ Error generating sample invoice: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/v1/invoice/generate", tags=["Invoice"])
+@app.post("/api/invoices/generate", tags=["Invoices"])
 async def generate_invoice(request: InvoiceRequest):
     """
-    توليد فاتورة مخصصة
-    
-    Example request:
-```json
-    {
-        "invoice_number": "INV-2025-002",
-        "client_name": "عميل الاختبار",
-        "client_email": "test@example.com",
-        "client_address": "مسقط، سلطنة عمان",
-        "items": [
-            {"description": "خدمة استشارية", "quantity": 5, "unit_price": 100.0},
-            {"description": "تطوير برمجي", "quantity": 20, "unit_price": 75.0}
-        ],
-        "tax_rate": 5.0,
-        "days_until_due": 30
-    }
-```
+    Generate an invoice
     """
     try:
-        # تحويل البيانات إلى InvoiceData
-        items = [
-            InvoiceItem(
-                description=item["description"],
-                quantity=float(item["quantity"]),
-                unit_price=float(item["unit_price"])
+        if not engine:
+            raise HTTPException(
+                status_code=503, 
+                detail="DocumentEngine not initialized. Check template and brand guidelines paths."
             )
+        
+        logger.info(f"📄 Generating invoice: {request.invoice_number}")
+        
+        # Prepare items
+        items = [
+            {
+                "description": item.description,
+                "quantity": item.quantity,
+                "unit_price": item.unit_price
+            }
             for item in request.items
         ]
         
-        issue_date = datetime.now()
-        due_date = issue_date + timedelta(days=request.days_until_due)
-        
-        invoice_data = InvoiceData(
+        # Generate PDF
+        pdf = await engine.generate_invoice_pdf(
             invoice_number=request.invoice_number,
-            issue_date=issue_date.strftime("%Y-%m-%d"),
-            due_date=due_date.strftime("%Y-%m-%d"),
             client_name=request.client_name,
             client_email=request.client_email,
-            client_address=request.client_address,
+            client_contact=request.client_contact,
             items=items,
-            tax_rate=request.tax_rate
+            issue_date=request.issue_date,
+            due_date=request.due_date
         )
         
-        # توليد PDF
-        pdf_io = document_engine.generate_invoice_pdf(invoice_data)
+        logger.info(f"✅ Invoice generated: {request.invoice_number}")
         
-        return FileResponse(
-            iter([pdf_io.getvalue()]),
-            media_type="application/pdf",
-            filename=f"Invoice_{request.invoice_number}.pdf",
-            headers={"Content-Disposition": f"attachment; filename='Invoice_{request.invoice_number}.pdf'"}
-        )
+        return {
+            "status": "success",
+            "invoice_number": request.invoice_number,
+            "message": "Invoice generated successfully",
+            "pdf_size": len(pdf.getvalue())
+        }
     
     except Exception as e:
         logger.error(f"❌ Error generating invoice: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/api/v1/invoice/preview", tags=["Invoice"])
-async def preview_sample_invoice():
-    """معاينة الفاتورة التجريبية بصيغة HTML"""
-    try:
-        sample_invoice = create_sample_invoice()
-        html_content = document_engine.generate_invoice_html(sample_invoice)
-        
-        return {
-            "status": "success",
-            "invoice_number": sample_invoice.invoice_number,
-            "html_content": html_content,
-            "metadata": {
-                "total": sample_invoice.total,
-                "subtotal": sample_invoice.subtotal,
-                "tax": sample_invoice.tax_amount,
-                "items_count": len(sample_invoice.items)
-            }
+@app.get("/api/status", tags=["Status"])
+async def status():
+    """Get API status"""
+    logger.info("📊 Status check")
+    return {
+        "service": "Document Engine API",
+        "status": "operational" if engine else "degraded",
+        "version": "1.0.0",
+        "components": {
+            "invoice_generation": "✅ ready" if engine else "❌ not ready",
+            "pdf_engine": "✅ ready" if engine else "❌ not ready",
+            "assets": "✅ integrated" if engine else "❌ not ready"
+        },
+        "paths": {
+            "template": "brand-kit/templates/invoice.html",
+            "brand_guidelines": "brand-kit/brand_guidelines.json",
+            "assets": "assets/"
         }
+    }
+
+
+# ============================================
+# Startup Event
+# ============================================
+
+@app.on_event("startup")
+async def startup_event():
+    """On startup"""
+    logger.info("=" * 60)
+    logger.info("🚀 Digital Castle - Document Engine API")
+    logger.info("=" * 60)
     
-    except Exception as e:
-        logger.error(f"❌ Error previewing invoice: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/api/v1/config", tags=["Config"])
-async def get_config():
-    """الحصول على معايير الهوية والإعدادات"""
-    try:
-        return {
-            "status": "success",
-            "brand": document_engine.brand_guidelines,
-            "components": {
-                "logo": os.path.exists(os.path.join("assets", "logo.svg")),
-                "signature": os.path.exists(os.path.join("assets", "signature.png")),
-                "stamp": os.path.exists(os.path.join("assets", "stamp.png")),
-                "templates": os.path.exists(os.path.join("brand-kit", "templates"))
-            }
-        }
+    if engine:
+        logger.info("✅ Document Engine: Ready")
+    else:
+        logger.warning("❌ Document Engine: Not initialized")
     
-    except Exception as e:
-        logger.error(f"❌ Error loading config: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    logger.info("📖 Docs: /docs")
+    logger.info("📊 Status: /api/status")
+    logger.info("=" * 60)
 
 
 # ============================================
-# Error Handling
+# Main
 # ============================================
-
-@app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
-    """معالج الأخطاء العام"""
-    logger.error(f"❌ Unhandled exception: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal Server Error", "error": str(exc)}
-    )
-
-
-# ============================================
-# 404 Handler
-# ============================================
-
-@app.get("/{path:path}", tags=["Fallback"])
-async def fallback(path: str):
-    """معالج المسارات غير الموجودة"""
-    return JSONResponse(
-        status_code=404,
-        content={
-            "detail": f"Endpoint '/{path}' not found",
-            "available_endpoints": {
-                "health": "GET /",
-                "health_check": "GET /api/v1/health",
-                "sample_invoice": "GET /api/v1/invoice/sample",
-                "generate_invoice": "POST /api/v1/invoice/generate",
-                "preview_invoice": "GET /api/v1/invoice/preview",
-                "config": "GET /api/v1/config"
-            }
-        }
-    )
-
-
-# ============================================
-# Lifespan Context Manager
-# ============================================
-
-@app.middleware("http")
-async def log_requests(request, call_next):
-    """تسجيل جميع الطلبات"""
-    logger.info(f"📨 Incoming request: {request.method} {request.url.path}")
-    response = await call_next(request)
-    logger.info(f"📤 Response: {response.status_code}")
-    return response
-
 
 if __name__ == "__main__":
-    import uvicorn
+    # Get port from environment or use default
+    port = int(os.getenv("PORT", 8000))
     
-    # تشغيل الخادم على Railway
+    # Run server
     uvicorn.run(
-        app,
+        "app:app",
         host="0.0.0.0",
-        port=8000,
-        log_level="info",
-        access_log=True
+        port=port,
+        reload=False,
+        log_level="info"
     )
