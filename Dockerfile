@@ -1,59 +1,38 @@
-# Build Stage: استخراج الحد الأدنى من المكتبات المطلوبة
-FROM python:3.11-slim as builder
+FROM python:3.11-slim
 
-# تثبيت المكتبات المطلوبة للـ WeasyPrint والخطوط والرسوميات
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# تثبيت المكتبات الرسومية والخطوط المطلوبة لـ WeasyPrint
+RUN apt-get update && apt-get install -y \
     libpango-1.0-0 \
-    libpango1.0-dev \
     libpangoft2-1.0-0 \
-    libcairo2 \
-    libcairo2-dev \
-    libffi-dev \
-    libssl-dev \
-    fonts-liberation \
-    fonts-dejavu \
-    fonts-liberation2 \
+    fonts-cairo \
     fonts-noto \
     fonts-noto-cjk \
     fonts-noto-color-emoji \
+    libffi-dev \
+    libssl-dev \
+    xfonts-75dpi \
+    xfonts-96dpi \
     && rm -rf /var/lib/apt/lists/*
 
-# Runtime Stage
-FROM python:3.11-slim
-
-# نسخ المكتبات المثبتة من مرحلة البناء
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpango-1.0-0 \
-    libpango1.0-dev \
-    libpangoft2-1.0-0 \
-    libcairo2 \
-    libcairo2-dev \
+# تثبيت الخطوط العربية والإنجليزية
+RUN apt-get update && apt-get install -y \
     fonts-liberation \
     fonts-dejavu \
-    fonts-liberation2 \
-    fonts-noto \
-    fonts-noto-color-emoji \
+    ttf-mscorefonts-installer \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# نسخ ملفات المتطلبات
+# نسخ requirements وتثبيت الـ Dependencies
 COPY requirements.txt .
-
-# تثبيت المكتبات Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# نسخ كل ملفات المشروع
-COPY app.py .
-COPY document_engine.py .
-COPY assets/ ./assets/
-COPY brand-kit/ ./brand-kit/
+# نسخ ملفات التطبيق
+COPY . .
 
-# صلاحيات التنفيذ
-RUN chmod +x app.py
-
-# Expose المنفذ الافتراضي
-EXPOSE 8000
+# الملفات والأصول
+RUN mkdir -p assets brand-kit/templates
 
 # تشغيل التطبيق
+EXPOSE 8000
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
