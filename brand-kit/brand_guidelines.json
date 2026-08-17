@@ -1,56 +1,95 @@
 {
   "company": {
-    "name": "Digital Castle S.P.C",
-    "arabic_name": "شركة القلعة الرقمية ش.ش.و",
-    "tagline": "منصات ذكية، حلول مؤسسية",
-    "established": 2025,
-    "jurisdiction": "Oman"
+    "name_ar": "شركة القلعة الرقمية ش.ش.و",
+    "name_en": "Digital Castle S.P.C",
+    "registration_number": "1197389",
+    "tax_id": "VAT OM-VAT-PENDING",
+    "vat_rate": 0.05,
+    "currency": "OMR",
+    "country": "Sultanate of Oman",
+    "website": "DigitalCastle.io",
+    "email": "info@DigitalCastle.io",
+    "phone": "+968 9969 6333"
   },
+
   "colors": {
-    "primary": "#1a1f3a",
-    "secondary": "#0d47a1",
-    "accent": "#00bcd4",
-    "success": "#4caf50",
-    "warning": "#ff9800",
-    "danger": "#f44336",
-    "neutral": "#9e9e9e",
-    "background": "#f5f7fa",
-    "text_dark": "#212121",
-    "text_light": "#757575"
+    "primary": "#071033",
+    "secondary": "#0025FF",
+    "accent": "#08F9F2",
+    "white": "#FFFFFF",
+    "black": "#000000",
+    "gray_light": "#F5F7FA",
+    "gray_medium": "#9CA3AF",
+    "gray_dark": "#374151",
+    "border": "#E5E7EB",
+    "text_dark": "#1F2937"
   },
+
   "typography": {
-    "primary_font": "Inter, sans-serif",
-    "secondary_font": "Cairo, sans-serif",
-    "heading_weight": 700,
-    "body_weight": 400,
-    "base_size": 14,
-    "heading_sizes": {
-      "h1": 32,
-      "h2": 24,
-      "h3": 20,
-      "h4": 16
+    "font_primary": "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+    "font_secondary": "Cairo, sans-serif",
+    "sizes": {
+      "xs": "11px",
+      "sm": "12px",
+      "base": "13px",
+      "lg": "14px",
+      "xl": "16px",
+      "2xl": "18px",
+      "3xl": "20px",
+      "4xl": "24px"
+    },
+    "weights": {
+      "normal": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
     }
   },
-  "spacing": {
-    "xs": 4,
-    "sm": 8,
-    "md": 16,
-    "lg": 24,
-    "xl": 32,
-    "2xl": 48
+
+  "document": {
+    "invoice": {
+      "page_size": "A4",
+      "margins": "20px",
+      "header_height": "60px",
+      "line_height": "1.6",
+      "print_quality": "300dpi"
+    },
+    "report": {
+      "background": "#071033",
+      "text_color": "#FFFFFF",
+      "accent_color": "#0025FF"
+    }
   },
-  "document_settings": {
-    "page_size": "A4",
-    "margin_top": 20,
-    "margin_bottom": 20,
-    "margin_left": 20,
-    "margin_right": 20,
-    "dpi": 300,
-    "quality": "high"
+
+  "layout": {
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "xl": "20px",
+      "2xl": "24px"
+    },
+    "border_radius": {
+      "none": "0",
+      "sm": "2px",
+      "md": "4px",
+      "lg": "6px"
+    }
   },
-  "legal": {
-    "address": "Muscat, Sultanate of Oman",
-    "registration": "Digital Castle S.P.C",
-    "license_type": "Software Development & AI Solutions"
+
+  "components": {
+    "table": {
+      "header_bg": "#F9FAFB",
+      "header_text": "#1F2937",
+      "header_weight": 600,
+      "row_border": "1px solid #E5E7EB",
+      "row_height": "40px"
+    },
+    "invoice": {
+      "accent_line": "2px solid #0025FF",
+      "border": "1px solid #E5E7EB",
+      "box_shadow": "0 1px 3px rgba(0,0,0,0.1)"
+    }
   }
 }
