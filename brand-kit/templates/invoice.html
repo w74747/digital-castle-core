@@ -1,384 +1,449 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="en" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاتورة رسمية - Digital Castle S.P.C</title>
+    <title>Official Commercial Invoice</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Inter:wght@400;600;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #1F2937;
+            line-height: 1.6;
+            background: #FFFFFF;
         }
-
-        html, body {
-            font-family: 'Cairo', 'Inter', sans-serif;
-            background-color: #ffffff;
-            color: #212121;
+        
+        @page {
+            size: A4;
+            margin: 20mm;
         }
-
-        .page {
+        
+        .invoice-container {
             width: 210mm;
             height: 297mm;
-            padding: 20mm;
+            margin: 0 auto;
+            padding: 20px;
             background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             position: relative;
         }
-
+        
         /* Header */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 3px solid #1a1f3a;
-            padding-bottom: 20px;
             margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #0025FF;
         }
-
-        .company-info {
-            flex: 1;
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-
-        .company-logo {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 10px;
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0025FF 0%, #08F9F2 100%);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
         }
-
+        
         .company-name {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1a1f3a;
-            margin-bottom: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1F2937;
+            font-family: 'Cairo', sans-serif;
         }
-
-        .company-tagline {
-            font-size: 12px;
-            color: #757575;
-            font-style: italic;
+        
+        .company-name-en {
+            font-size: 10px;
+            color: #6B7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-
-        .invoice-details {
-            text-align: left;
-            flex: 1;
-        }
-
+        
         .invoice-title {
-            font-size: 28px;
+            text-align: right;
+            font-size: 20px;
             font-weight: 700;
-            color: #0d47a1;
-            margin-bottom: 10px;
+            color: #1F2937;
         }
-
+        
         .invoice-meta {
-            font-size: 12px;
-            color: #757575;
+            font-size: 11px;
+            color: #6B7280;
+            text-align: right;
             line-height: 1.8;
         }
-
-        .invoice-meta strong {
-            color: #212121;
-        }
-
-        /* Content */
-        .content {
-            margin-bottom: 40px;
-        }
-
-        .billing-section {
+        
+        .meta-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-top: 5px;
+        }
+        
+        .meta-label {
+            font-weight: 600;
+            color: #1F2937;
+            min-width: 80px;
+            text-align: left;
+        }
+        
+        .meta-value {
+            text-align: left;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Billing Section */
+        .billing-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 30px;
+            margin-bottom: 30px;
         }
-
-        .bill-from, .bill-to {
-            flex: 1;
+        
+        .billing-box {
+            padding: 12px;
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-left: 2px solid #0025FF;
+            border-radius: 4px;
         }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1a1f3a;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #00bcd4;
-            padding-bottom: 5px;
+        
+        .billing-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #1F2937;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-family: 'Cairo', sans-serif;
         }
-
-        .section-content {
+        
+        .billing-content {
             font-size: 12px;
-            color: #212121;
-            line-height: 1.8;
+            line-height: 1.7;
+            color: #374151;
         }
-
-        .section-content p {
-            margin-bottom: 5px;
+        
+        .billing-content strong {
+            display: block;
+            color: #1F2937;
+            margin-bottom: 3px;
         }
-
+        
         /* Items Table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 12px;
         }
-
+        
         .items-table thead {
-            background-color: #1a1f3a;
-            color: white;
+            background: #F9FAFB;
+            border-bottom: 1px solid #E5E7EB;
         }
-
+        
         .items-table th {
-            padding: 12px;
+            padding: 10px;
             text-align: right;
-            font-weight: 700;
-            border: 1px solid #ddd;
-        }
-
-        .items-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: right;
-        }
-
-        .items-table tbody tr:nth-child(even) {
-            background-color: #f5f7fa;
-        }
-
-        .items-table tbody tr:hover {
-            background-color: #e8f4f8;
-        }
-
-        .quantity {
-            text-align: center;
-        }
-
-        .unit-price, .total {
-            text-align: left;
-            font-family: 'Inter', monospace;
             font-weight: 600;
+            color: #1F2937;
+            border-right: 1px solid #E5E7EB;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-
-        /* Summary */
-        .summary {
-            margin-bottom: 30px;
+        
+        .items-table th:first-child {
+            border-right: none;
+        }
+        
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #E5E7EB;
+            border-right: 1px solid #E5E7EB;
+            text-align: right;
+            color: #374151;
+        }
+        
+        .items-table td:first-child {
+            border-right: none;
             text-align: left;
-            float: left;
-            width: 50%;
         }
-
-        .summary-row {
+        
+        .items-table tbody tr:last-child td {
+            border-bottom: 2px solid #0025FF;
+        }
+        
+        /* Totals */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+        }
+        
+        .totals-table {
+            width: 280px;
+            font-size: 12px;
+        }
+        
+        .total-row {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            font-size: 12px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #E5E7EB;
         }
-
-        .summary-row.total {
-            border-bottom: 3px solid #1a1f3a;
+        
+        .total-row.grand-total {
+            border-top: 2px solid #0025FF;
+            border-bottom: none;
+            padding: 12px 0;
             font-weight: 700;
             font-size: 14px;
-            padding: 12px 0;
-            color: #0d47a1;
+            color: #0025FF;
         }
-
-        .summary-row.subtotal,
-        .summary-row.tax {
-            color: #757575;
+        
+        .total-label {
+            color: #6B7280;
+            font-weight: 500;
         }
-
-        /* Signature & Stamp */
-        .footer {
-            clear: both;
-            margin-top: 50px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
+        
+        .total-value {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #1F2937;
+        }
+        
+        .total-row.grand-total .total-value {
+            color: #0025FF;
+        }
+        
+        /* Footer Section */
+        .footer-section {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            gap: 30px;
-        }
-
-        .signature-block {
-            flex: 1;
-            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
             font-size: 11px;
         }
-
-        .signature-image {
-            width: 100px;
-            height: 60px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #212121;
+        
+        .footer-item {
+            flex: 1;
+            text-align: center;
         }
-
-        .signature-name {
-            font-weight: 700;
-            margin-top: 5px;
-            color: #1a1f3a;
+        
+        .signature-line {
+            border-top: 1px solid #1F2937;
+            padding-top: 4px;
+            margin-top: 8px;
+            font-weight: 600;
         }
-
-        .stamp-image {
-            width: 120px;
-            height: 120px;
-            opacity: 0.9;
+        
+        .payment-box {
+            background: #F3F4F6;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 20px;
         }
-
-        /* Terms */
-        .terms {
-            margin-top: 30px;
-            font-size: 10px;
-            color: #757575;
-            border-top: 1px solid #e0e0e0;
-            padding-top: 15px;
-            line-height: 1.6;
-        }
-
-        .terms-title {
-            font-weight: 700;
-            color: #1a1f3a;
+        
+        .payment-title {
+            font-weight: 600;
+            color: #1F2937;
             margin-bottom: 8px;
         }
-
-        /* Print Media */
-        @media print {
-            body {
-                margin: 0;
-                padding: 0;
-            }
-            .page {
-                margin: 0;
-                padding: 20mm;
-                width: 210mm;
-                height: 297mm;
-                box-shadow: none;
-            }
+        
+        .payment-item {
+            padding: 3px 0;
+            color: #374151;
         }
-
+        
+        .payment-item strong {
+            color: #1F2937;
+        }
+        
+        /* Terms */
+        .terms-section {
+            background: #F9FAFB;
+            padding: 12px;
+            border-left: 2px solid #0025FF;
+            margin-top: 20px;
+            font-size: 10px;
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .terms-title {
+            font-weight: 600;
+            color: #1F2937;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        
+        .terms-item {
+            margin: 4px 0;
+            padding-left: 4px;
+        }
+        
+        /* Print */
+        @media print {
+            body { margin: 0; padding: 0; background: white; }
+            .invoice-container { box-shadow: none; margin: 0; }
+        }
+        
         /* RTL Support */
-        .ltr {
+        .text-ltr {
             direction: ltr;
             text-align: left;
-        }
-
-        .rtl {
-            direction: rtl;
-            text-align: right;
         }
     </style>
 </head>
 <body>
-    <div class="page">
+    <div class="invoice-container">
         <!-- Header -->
         <div class="header">
-            <div class="company-info">
-                {% if logo_path %}
-                    <img src="data:image/svg+xml;base64,{{ logo_base64 }}" class="company-logo" alt="Digital Castle Logo">
-                {% endif %}
-                <div class="company-name">Digital Castle S.P.C</div>
-                <div class="company-tagline">شركة القلعة الرقمية ش.ش.و</div>
+            <div class="logo-section">
+                <div class="logo-icon">DC</div>
+                <div>
+                    <div class="company-name">شركة القلعة الرقمية</div>
+                    <div class="company-name-en">Digital Castle S.P.C</div>
+                </div>
             </div>
-            <div class="invoice-details">
-                <div class="invoice-title">فاتورة رسمية</div>
+            
+            <div>
+                <div class="invoice-title">OFFICIAL COMMERCIAL INVOICE</div>
+                <div class="invoice-title" style="font-size: 14px; font-weight: 600; color: #0025FF; margin-top: 8px;">فاتورة رسمية مختومة</div>
                 <div class="invoice-meta">
-                    <div><strong>رقم الفاتورة:</strong> {{ invoice_number }}</div>
-                    <div><strong>التاريخ:</strong> {{ issue_date }}</div>
-                    <div><strong>تاريخ الاستحقاق:</strong> {{ due_date }}</div>
-                    <div><strong>العملة:</strong> OMR</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Content -->
-        <div class="content">
-            <!-- Billing Information -->
-            <div class="billing-section">
-                <div class="bill-from">
-                    <div class="section-title">من</div>
-                    <div class="section-content">
-                        <p><strong>Digital Castle S.P.C</strong></p>
-                        <p>Muscat, Sultanate of Oman</p>
-                        <p>البريد الإلكتروني: info@digitalcastle.om</p>
-                        <p>الهاتف: +968-95-XXXX-XXXX</p>
+                    <div class="meta-row">
+                        <span class="meta-label">INVOICE NO.:</span>
+                        <span class="meta-value text-ltr">{{ invoice_number }}</span>
                     </div>
-                </div>
-
-                <div class="bill-to">
-                    <div class="section-title">إلى</div>
-                    <div class="section-content">
-                        <p><strong>{{ client_name }}</strong></p>
-                        <p>{{ client_email }}</p>
-                        <p>{{ client_address }}</p>
+                    <div class="meta-row">
+                        <span class="meta-label">ISSUE DATE:</span>
+                        <span class="meta-value text-ltr">{{ issue_date }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">DUE DATE:</span>
+                        <span class="meta-value text-ltr">{{ due_date }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">CURRENCY:</span>
+                        <span class="meta-value text-ltr">OMR</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Items Table -->
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>وصف الخدمة</th>
-                        <th class="quantity">الكمية</th>
-                        <th class="unit-price">السعر الفردي</th>
-                        <th class="total">المجموع</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in items %}
-                    <tr>
-                        <td>{{ item.description }}</td>
-                        <td class="quantity">{{ item.quantity }}</td>
-                        <td class="unit-price">{{ item.unit_price|float|string }} OMR</td>
-                        <td class="total">{{ item.total|float|string }} OMR</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <!-- Summary -->
-            <div class="summary">
-                <div class="summary-row subtotal">
-                    <span>الإجمالي الفرعي:</span>
-                    <span class="ltr">{{ subtotal|float|string }} OMR</span>
+        </div>
+        
+        <!-- Billing Info -->
+        <div class="billing-section">
+            <div class="billing-box">
+                <div class="billing-title">BILLED TO / إلى</div>
+                <div class="billing-content">
+                    <strong>{{ client_name }}</strong>
+                    {{ client_email }}<br>
+                    {{ client_contact }}
                 </div>
-                <div class="summary-row tax">
-                    <span>الضريبة ({{ tax_rate }}%):</span>
-                    <span class="ltr">{{ tax_amount|float|string }} OMR</span>
-                </div>
-                <div class="summary-row total">
-                    <span>الإجمالي النهائي:</span>
-                    <span class="ltr">{{ total|float|string }} OMR</span>
+            </div>
+            
+            <div class="billing-box">
+                <div class="billing-title">ISSUED BY / من</div>
+                <div class="billing-content">
+                    <strong>Digital Castle S.P.C</strong>
+                    C.R. 1197389 · VAT OM-VAT-PENDING<br>
+                    Muscat, Sultanate of Oman<br>
+                    info@DigitalCastle.io<br>
+                    DigitalCastle.io
                 </div>
             </div>
         </div>
-
+        
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: auto;">DESCRIPTION OF SERVICES / وصف الخدمات</th>
+                    <th style="width: 80px;">QTY</th>
+                    <th style="width: 100px;">UNIT RATE (OMR)</th>
+                    <th style="width: 100px;">AMOUNT (OMR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.description }}</td>
+                    <td style="text-align: center;">{{ item.quantity }}</td>
+                    <td class="text-ltr">{{ "%.3f"|format(item.unit_price) }}</td>
+                    <td class="text-ltr">{{ "%.3f"|format(item.quantity * item.unit_price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Totals -->
+        <div class="totals-section">
+            <div class="totals-table">
+                <div class="total-row">
+                    <span class="total-label">Subtotal:</span>
+                    <span class="total-value text-ltr">{{ subtotal }} OMR</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">VAT (5%):</span>
+                    <span class="total-value text-ltr">{{ tax }} OMR</span>
+                </div>
+                <div class="total-row grand-total">
+                    <span>TOTAL DUE:</span>
+                    <span class="text-ltr">{{ total }} OMR</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment & Terms -->
+        <div class="payment-box">
+            <div class="payment-title">PAYMENT INSTRUCTIONS:</div>
+            <div class="payment-item"><strong>Beneficiary:</strong> Digital Castle S.P.C</div>
+            <div class="payment-item"><strong>Bank:</strong> [Bank Name], Muscat</div>
+            <div class="payment-item"><strong>IBAN:</strong> OM00 0000 0000 0000 0000 0000</div>
+            <div class="payment-item"><strong>SWIFT:</strong> XXXXOMRX</div>
+        </div>
+        
+        <div class="terms-section">
+            <div class="terms-title">TERMS & CONDITIONS:</div>
+            <div class="terms-item">• Payment due within 30 days of invoice date</div>
+            <div class="terms-item">• Late settlement may attract charges as per governing agreement</div>
+            <div class="terms-item">• All amounts in OMR unless stated otherwise</div>
+            <div class="terms-item">• This is an official document of Digital Castle S.P.C</div>
+        </div>
+        
         <!-- Footer -->
-        <div class="footer">
-            <div class="signature-block">
-                {% if signature_path %}
-                    <div class="signature-image" style="background-image: url('data:image/png;base64,{{ signature_base64 }}'); background-size: contain; background-repeat: no-repeat;"></div>
-                {% endif %}
-                <div class="signature-name">المدير المالي</div>
-                <div style="font-size: 10px; color: #757575;">Financial Director</div>
+        <div class="footer-section">
+            <div class="footer-item">
+                <div style="margin-bottom: 20px;">_____________________</div>
+                <div class="signature-line">AUTHORISED SIGNATURE</div>
             </div>
-
-            {% if stamp_path %}
-            <div style="text-align: center;">
-                <img src="data:image/png;base64,{{ stamp_base64 }}" class="stamp-image" alt="Corporate Stamp">
+            <div style="flex: 2;"></div>
+            <div class="footer-item">
+                <div style="font-size: 10px; color: #6B7280;">
+                    Digital Castle S.P.C - C.R. 1197389 · Muscat, Oman<br>
+                    DigitalCastle.io · +968 9969 6333<br>
+                    Confidential – property of Digital Castle S.P.C
+                </div>
             </div>
-            {% endif %}
-        </div>
-
-        <!-- Terms -->
-        <div class="terms">
-            <div class="terms-title">شروط الدفع والتسليم</div>
-            <p>1. يجب تسديد الفاتورة في الموعد المحدد أعلاه.</p>
-            <p>2. تخضع جميع الخدمات لشروط وأحكام Digital Castle S.P.C</p>
-            <p>3. في حالة التأخير، قد يتم تطبيق فائدة بنسبة 5% سنوياً.</p>
-            <p>شكراً لتعاملك معنا | Thank You For Your Business</p>
         </div>
     </div>
 </body>
